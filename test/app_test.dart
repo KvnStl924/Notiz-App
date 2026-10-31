@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notiz_app/data/note_store.dart';
 import 'package:notiz_app/main.dart';
 import 'package:notiz_app/models/note.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Echte Datei-Zugriffe laufen außerhalb der simulierten Testzeit: abwechselnd
+/// Echte Speicher-Zugriffe laufen außerhalb der simulierten Testzeit: abwechselnd
 /// echte Zeit vergehen lassen und Frames pumpen.
 Future<void> settleIo(WidgetTester tester) async {
   for (var i = 0; i < 5; i++) {
@@ -17,17 +16,10 @@ Future<void> settleIo(WidgetTester tester) async {
 }
 
 void main() {
-  late Directory dir;
-  late File file;
-
-  setUp(() {
-    dir = Directory.systemTemp.createTempSync('notiz');
-    file = File('${dir.path}/notes.json');
-  });
-  tearDown(() => dir.deleteSync(recursive: true));
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('Rezept anlegen, Tabelle ausfüllen, wird gespeichert', (tester) async {
-    final store = NoteStore(file);
+    final store = NoteStore();
     await tester.runAsync(store.load);
     await tester.pumpWidget(
         ChangeNotifierProvider.value(value: store, child: const NotizApp()));
@@ -55,7 +47,7 @@ void main() {
     expect(table.rows.first.first, '250');
 
     // Neustart: Daten sind noch da
-    final store2 = NoteStore(file);
+    final store2 = NoteStore();
     await tester.runAsync(store2.load);
     expect(store2.notes.single.title, 'Pfannkuchen');
   });

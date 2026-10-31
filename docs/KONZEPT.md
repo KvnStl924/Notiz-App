@@ -1,13 +1,16 @@
 # Notiz-App – Konzept
 
 Eine Notiz-App, primär als **Rezepte-App** für Kevin (Android) und Isabelle (iPhone).
-Beide Apps sehen identisch aus und verhalten sich identisch.
+Es gibt **eine** installierbare Web-App (PWA). Beide nutzen dieselbe App, sie sieht überall identisch aus.
 
 ## Entscheidungen
 
 | Thema | Entscheidung |
 |---|---|
-| Technologie | **Flutter** (eine Codebasis, native App für Android und iOS, identische Oberfläche) |
+| Technologie | **Flutter für das Web, als installierbare App (PWA)**. Kein App-Store, kein Apple-Developer-Account nötig (Entscheidung nach Klärung der iOS-Kosten) |
+| Installation | Android: Chrome → „App installieren“. iPhone: Safari → Teilen → „Zum Home-Bildschirm“. Beide öffnen im Vollbild ohne Browser-Leiste |
+| Hosting | Firebase Hosting (kostenlos, HTTPS) |
+| Offline | eigener Service Worker (Netz zuerst, sonst zuletzt geladene Version) |
 | Live-Sync | **Firebase Firestore** (Echtzeit, Offline-Cache, Live-Anzeige des Partners) |
 | Ablage / Backup | **Google Drive**: jede Notiz wird als lesbare **Markdown-Datei** in einen gemeinsamen Drive-Ordner geschrieben |
 | KI | **Keine KI in der App.** Claude bearbeitet Notizen von außen über die Markdown-Dateien in Google Drive |
@@ -79,8 +82,9 @@ lib/
 
 1. **Firebase-Projekt** anlegen (kostenlos), Firestore und Google-Login aktivieren. Dazu brauche ich später die Dateien `google-services.json` (Android) und `GoogleService-Info.plist` (iOS).
 2. **Google-Cloud-Projekt** (dasselbe wie Firebase): Google Drive API aktivieren.
-3. **iPhone von Isabelle**: Für die Installation einer eigenen App auf dem iPhone braucht es einen Apple-Developer-Account (99 USD/Jahr) und einen Mac mit Xcode oder einen Cloud-Build-Dienst (z. B. Codemagic). Ohne Apple-Account lässt sich die App nur 7 Tage lang testweise installieren.
-4. Android: Die APK kann ich dir bauen, du installierst sie direkt.
+3. **Installation**: Kein Developer-Account nötig. Die Web-Adresse wird einmal im Browser geöffnet und dann als App zum Startbildschirm hinzugefügt.
+
+Grenzen einer PWA auf dem iPhone: Push-Benachrichtigungen gibt es erst nach der Installation (ab iOS 16.4); nach längerer Nichtnutzung kann iOS lokal zwischengespeicherte Daten entfernen. Deshalb liegen die Notizen immer zusätzlich in Firestore und Drive.
 
 ## Bauplan
 
@@ -88,4 +92,4 @@ lib/
 2. Notizliste und Editor mit allen Block-Typen (lokal)
 3. Firebase-Login und Live-Sync
 4. Drive-Backup und Import von außen
-5. Android-Build, iOS-Build einrichten
+5. Veröffentlichung auf Firebase Hosting, App-Icon
