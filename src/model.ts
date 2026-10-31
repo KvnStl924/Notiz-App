@@ -77,6 +77,8 @@ export interface ShopItem {
   home: boolean;
   bought: boolean;
   addedAt: string; // ISO
+  /** Zeitstempel der letzten Änderung (Sync: jüngere Änderung gewinnt) */
+  rev?: number;
 }
 
 export const isDone = (i: ShopItem) => i.home || i.bought;

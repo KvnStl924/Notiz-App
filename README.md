@@ -16,7 +16,7 @@ Konzept, Entscheidungen und Bauplan: [docs/KONZEPT.md](docs/KONZEPT.md)
 - [x] iOS-Oberfläche: große Titel, Glas-Karten, schwebende Tab-Leiste, Kontextmenü, Wisch-zum-Löschen, Wisch-zurück, Hell/Dunkel
 - [x] Rezepte und Notizen, Suche, Editor mit Tabellen, Checklisten und Schritt-für-Schritt
 - [x] Installierbar (Manifest, Vollbild) und offline nutzbar (Service Worker)
-- [ ] Firebase-Login und Live-Sync
+- [x] Live-Sync (Firestore) mit Offline-Betrieb, Einladungslink statt Login, „wer ist gerade wo“ – getestet gegen den Firestore-Emulator; Einrichtung: [docs/FIREBASE-EINRICHTUNG.md](docs/FIREBASE-EINRICHTUNG.md)
 - [ ] Google-Drive-Backup und Import von außen
 - [ ] Bilder einfügen
 
@@ -25,6 +25,9 @@ Konzept, Entscheidungen und Bauplan: [docs/KONZEPT.md](docs/KONZEPT.md)
 ```bash
 npm install
 npm run dev      # Entwicklungsserver, auch im WLAN erreichbar
-npm test         # Tests (Markdown-Format)
+npm test         # Tests (Markdown, Einkaufsliste, Sync mit Speicher-Server)
+# Sync gegen den Firestore-Emulator testen (Java nötig):
+#   npx firebase emulators:start --only firestore --project demo-notiz
+#   NOTIZ_EMULATOR=127.0.0.1:8180 npm test
 npm run build    # Ausgabe: dist/
 ```

@@ -23,7 +23,7 @@ const storage = {
 };
 
 /** Lokale Sammlung mit Speichern und Abonnenten (local-first). Später kommt Firestore über dieselbe Schnittstelle dazu. */
-class Collection<T extends { id: string }> {
+export class Collection<T extends { id: string }> {
   protected items = new Map<string, T>();
   private listeners = new Set<() => void>();
   /** true, wenn beim Start schon gespeicherte Daten da waren */
@@ -51,10 +51,17 @@ class Collection<T extends { id: string }> {
   }
 }
 
-class NoteStore extends Collection<Note> {
-  constructor() {
-    super('notiz.notes.v2');
-    if (!this.hadData && import.meta.env.VITE_DEMO) for (const n of demoNotes()) this.items.set(n.id, n);
+export interface NoteHooks {
+  saved(n: Note): void;
+  removed(id: string): void;
+}
+
+export class NoteStore extends Collection<Note> {
+  /** Der Sync hängt sich hier ein, um lokale Änderungen mitzubekommen. */
+  hooks: NoteHooks[] = [];
+  constructor(key = 'notiz.notes.v2', demo = true) {
+    super(key);
+    if (demo && !this.hadData && import.meta.env.VITE_DEMO) for (const n of demoNotes()) this.items.set(n.id, n);
   }
   all(): Note[] {
     return [...this.items.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -66,16 +73,42 @@ class NoteStore extends Collection<Note> {
     note.updatedAt = new Date().toISOString();
     this.items.set(note.id, note);
     this.persist();
+    this.hooks.forEach((h) => h.saved(note));
   }
   remove(id: string) {
     this.items.delete(id);
     this.persist();
+    this.hooks.forEach((h) => h.removed(id));
+  }
+  /** Änderung vom Sync: speichern, ohne wieder hochzuladen. */
+  applyRemote(note: Note) {
+    this.items.set(note.id, note);
+    this.persist();
+  }
+  removeRemote(id: string) {
+    if (this.items.delete(id)) this.persist();
   }
 }
 
-class ShopStore extends Collection<ShopItem> {
-  constructor() {
-    super('notiz.shopping.v1');
+export interface ShopHooks {
+  saved(i: ShopItem): void;
+  removed(id: string): void;
+}
+
+export class ShopStore extends Collection<ShopItem> {
+  hooks: ShopHooks[] = [];
+  constructor(key = 'notiz.shopping.v1') {
+    super(key);
+  }
+  get(id: string) {
+    return this.items.get(id);
+  }
+  applyRemote(item: ShopItem) {
+    this.items.set(item.id, item);
+    this.persist();
+  }
+  removeRemote(id: string) {
+    if (this.items.delete(id)) this.persist();
   }
   all(): ShopItem[] {
     return [...this.items.values()].sort((a, b) => a.addedAt.localeCompare(b.addedAt));
@@ -87,7 +120,10 @@ class ShopStore extends Collection<ShopItem> {
   addFromRecipe(note: Note) {
     const r = mergeRecipe(this.all(), note);
     for (const i of [...r.added, ...r.updated]) this.items.set(i.id, i);
-    if (r.added.length || r.updated.length) this.persist();
+    if (r.added.length || r.updated.length) {
+      this.persist();
+      for (const i of [...r.added, ...r.updated]) this.hooks.forEach((h) => h.saved(i));
+    }
     return r;
   }
   addCustom(): ShopItem {
@@ -103,20 +139,25 @@ class ShopStore extends Collection<ShopItem> {
     };
     this.items.set(item.id, item);
     this.persist();
+    this.hooks.forEach((h) => h.saved(item));
     return item;
   }
   /** Nach direkter Änderung eines Postens aufrufen. */
   save(item: ShopItem) {
     this.items.set(item.id, item);
     this.persist();
+    this.hooks.forEach((h) => h.saved(item));
   }
   remove(id: string) {
     this.items.delete(id);
     this.persist();
+    this.hooks.forEach((h) => h.removed(id));
   }
   removeWhere(pred: (i: ShopItem) => boolean) {
-    for (const i of [...this.items.values()]) if (pred(i)) this.items.delete(i.id);
+    const gone = [...this.items.values()].filter(pred);
+    for (const i of gone) this.items.delete(i.id);
     this.persist();
+    for (const i of gone) this.hooks.forEach((h) => h.removed(i.id));
   }
   /** Zeigt die Demo-Liste in der Vorschau. */
   seedDemo(notes: Note[]) {
@@ -135,7 +176,11 @@ if (import.meta.env.VITE_DEMO && shop.all().length === 0 && !storage.get('notiz.
 
 function useCollection<C extends Collection<{ id: string }>>(c: C): void {
   const [, set] = useState(0);
-  useEffect(() => c.subscribe(() => set((v) => v + 1)), []);
+  useEffect(() => {
+    const off = c.subscribe(() => set((v) => v + 1));
+    set((v) => v + 1); // Änderungen zwischen erstem Zeichnen und Anmeldung nachholen
+    return off;
+  }, []);
 }
 
 /** Rendert neu, sobald sich Notizen ändern. */
@@ -148,4 +193,10 @@ export function useNotes(): Note[] {
 export function useShopping(): ShopItem[] {
   useCollection(shop);
   return shop.all();
+}
+
+/** Rendert neu, wenn sich Notizen ändern, und liefert eine einzelne Notiz (auch wenn der Sync sie ersetzt). */
+export function useNote(id: string): Note | undefined {
+  useCollection(store);
+  return store.get(id);
 }

@@ -1,5 +1,5 @@
 import { Fragment } from 'preact';
-import { useContext, useRef, useState } from 'preact/hooks';
+import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 import {
   ArrowDown,
   ArrowUp,
@@ -24,7 +24,9 @@ import {
 } from 'lucide-preact';
 import { type Block, type Note, type NoteType, mk, newRecipe } from './model';
 import { writeMarkdown } from './markdown';
-import { shop, store, useNotes } from './store';
+import { shop, store, useNote, useNotes } from './store';
+import { sync, usePresence } from './sync/manager';
+import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 
 export type Tab = NoteType | 'shopping';
@@ -198,8 +200,9 @@ export function EditorScreen(props: {
   focusTitle: boolean;
   onShowShopping: () => void;
 }) {
-  const note = store.get(props.id);
+  const note = useNote(props.id);
   const [, force] = useState(0);
+  const others = usePresence(props.id);
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
   const [ask, setAsk] = useState<Ask | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -210,6 +213,16 @@ export function EditorScreen(props: {
   const toastTimer = useRef<number | undefined>(undefined);
   const plusRef = useRef<HTMLButtonElement>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
+
+  // Notiz verschwunden (z. B. vom anderen Gerät gelöscht): zurück zur Liste
+  useEffect(() => {
+    if (!note) props.onBack();
+  }, [!note]);
+  // Dem anderen zeigen, dass man in dieser Notiz ist; beim Verlassen abmelden
+  useEffect(() => {
+    sync.engine?.setFocus(props.id, null);
+    return () => sync.engine?.setFocus(null, null);
+  }, [props.id, sync.engine]);
 
   if (!note) return null;
   const update = () => {
@@ -413,8 +426,27 @@ export function EditorScreen(props: {
           </div>
         )}
 
-        {note.blocks.map((b, i) => (
-          <div class="block" key={b.id}>
+        {others.length > 0 && (
+          <div class="here">
+            {others.map((p) => (
+              <span class="here-chip" key={p.clientId} style={{ '--pc': personColor(p.name) } as Record<string, string>}>
+                <i /> {p.name} ist hier
+              </span>
+            ))}
+          </div>
+        )}
+
+        {note.blocks.map((b, i) => {
+          const who = others.find((p) => p.blockId === b.id);
+          return (
+          <div
+            class={'block' + (who ? ' remote' : '')}
+            key={b.id}
+            style={who ? ({ '--pc': personColor(who.name) } as Record<string, string>) : undefined}
+            onFocusIn={() => sync.engine?.setFocus(note.id, b.id)}
+            onFocusOut={() => sync.engine?.setFocus(note.id, null)}
+          >
+            {who && <span class="who">{who.name}</span>}
             <div class="block-body">
               <BlockView block={b} focus={focusId === b.id} update={update} ask={setAsk} readOnly={readOnly} />
             </div>
@@ -422,7 +454,8 @@ export function EditorScreen(props: {
               <Ellipsis size={20} />
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
       </ReadOnlyCtx.Provider>
 

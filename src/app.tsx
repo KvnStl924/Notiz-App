@@ -3,6 +3,7 @@ import { FileText, ShoppingCart, Utensils } from 'lucide-preact';
 import { isDone, type NoteType } from './model';
 import { createNote, EditorScreen, ListScreen, TAB_TITLE, type Tab } from './screens';
 import { ShopScreen } from './shop-screen';
+import { SyncButton, SyncPanel } from './sync-ui';
 import { useShopping } from './store';
 
 interface Open {
@@ -136,6 +137,8 @@ export function App() {
           )}
         </div>
 
+        <SyncButton />
+
         <nav class="tabbar glass" aria-label="Bereiche">
           {(['recipe', 'note', 'shopping'] as Tab[]).map((t) => (
             <button key={t} class={'tab' + (tab === t ? ' active' : '')} onClick={() => setTab(t)}>
@@ -156,6 +159,7 @@ export function App() {
       </div>
 
       <div class="dim" ref={dimRef} />
+      <SyncPanel />
 
       {open && (
         <div class="screen top" ref={edRef} style={{ transform: 'translate3d(100%,0,0)' }}>

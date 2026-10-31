@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Kein Login: Der Zugriff hängt am langen, zufälligen Code des gemeinsamen Bereichs (24+ Zeichen),
+// der im Pfad steht. Wer ihn nicht kennt, kann nichts lesen oder schreiben, und die Liste aller
+// Bereiche (/spaces) lässt sich nicht abfragen.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /spaces/{space}/{collection}/{doc} {
+      function knowsSpace() {
+        return space.size() >= 24 && collection in ['notes', 'blocks', 'shop', 'presence'];
+      }
+      allow get, list, delete: if knowsSpace();
+      // Dokumente klein halten (Schutz vor Missbrauch)
+      allow create, update: if knowsSpace()
+        && request.resource.data.keys().size() <= 20
+        && (!('data' in request.resource.data) || request.resource.data.data.size() < 200000);
+    }
+  }
+}

@@ -15,7 +15,7 @@ Es gibt **eine** installierbare Web-App (PWA). Beide nutzen dieselbe App, sie si
 | Live-Sync | **Firebase Firestore** (Echtzeit, Offline-Cache, Live-Anzeige des Partners) |
 | Ablage / Backup | **Google Drive**: jede Notiz wird als lesbare **Markdown-Datei** in einen gemeinsamen Drive-Ordner geschrieben |
 | KI | **Keine KI in der App.** Claude bearbeitet Notizen von außen über die Markdown-Dateien in Google Drive |
-| Anmeldung | Google-Login (derselbe Account wie für Drive) |
+| Anmeldung | **Kein Login.** Der gemeinsame Bereich hängt an einem langen, zufälligen Code im Einladungslink (Pfad `spaces/{code}` in Firestore, Regeln in `firestore.rules`). Wer den Link kennt, hat Zugriff |
 
 ## Funktionen (Version 1)
 
@@ -94,7 +94,7 @@ Grenzen einer PWA auf dem iPhone: Push-Benachrichtigungen gibt es erst nach der 
 
 1. Projekt-Gerüst, Datenmodell, Markdown-Parser mit Tests (fertig)
 2. Notizliste und Editor im iOS-Stil mit allen Block-Typen, lokal (fertig; Bilder fehlen noch)
-3. Firebase-Login und Live-Sync
+3. Live-Sync (fertig, getestet gegen den Emulator; wartet auf das Firebase-Projekt)
 4. Drive-Backup und Import von außen
 5. Veröffentlichung auf Firebase Hosting, App-Icon
 
