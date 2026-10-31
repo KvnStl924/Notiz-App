@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { getDocs, collection, setDoc, doc, getDoc, initializeFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { mk, newRecipe } from '../model';
@@ -81,9 +81,12 @@ describe.skipIf(!EMU)('Firestore-Emulator', () => {
   }, 30000);
 
   describe('Zugriffsschutz (ohne Login)', () => {
-    const app = initializeApp({ apiKey: 'x', projectId: 'demo-notiz' }, 'rules');
-    const db = initializeFirestore(app, {});
-    connectFirestoreEmulator(db, ...(EMU!.split(':') as [string, string]).map((v, i) => (i ? Number(v) : v)) as [string, number]);
+    let db: ReturnType<typeof initializeFirestore>;
+    beforeAll(() => {
+      const [host, port] = EMU!.split(':');
+      db = initializeFirestore(initializeApp({ apiKey: 'x', projectId: 'demo-notiz' }, 'rules'), {});
+      connectFirestoreEmulator(db, host, Number(port));
+    });
 
     it('Bereich mit langem Code: lesen und schreiben erlaubt', async () => {
       const ref = doc(db, 'spaces', space + 'rules', 'notes', 'ok');
