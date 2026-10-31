@@ -672,6 +672,18 @@ svg {
   color: var(--red);
   border-right: 0;
 }
+.tbl > .colfoot {
+  padding: 2px 0 4px;
+  border-bottom: 0;
+  border-right: 0;
+  display: flex;
+  justify-content: center;
+  color: var(--red);
+  min-width: 0;
+}
+.tbl > .colfoot:empty {
+  padding: 0;
+}
 .tbl textarea {
   font-size: 17px;
   line-height: 1.3;

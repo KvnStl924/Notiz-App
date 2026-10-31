@@ -10,6 +10,15 @@ interface Open {
 
 /** Wie weit der Hintergrund-Bildschirm beim Push nach links wandert (iOS: ~30 %). */
 const PARALLAX = 0.3;
+/** Jede geöffnete Notiz bekommt einen Verlaufseintrag (#note-…), damit die Android-Zurück-Geste und die Zurücktaste den Editor schließen. */
+const HASH = '#note-';
+const clearHash = () => {
+  try {
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch {
+    /* Verlauf nicht erlaubt */
+  }
+};
 const hostWidth = () => document.getElementById('app')!.clientWidth;
 
 export function App() {
@@ -52,31 +61,37 @@ export function App() {
 
   const openNote = (id: string, focusTitle = false) => {
     try {
-      history.pushState({ editor: id }, '');
+      if (location.hash.startsWith(HASH)) clearHash(); // übrig gebliebener Eintrag
+      location.hash = HASH.slice(1) + id;
     } catch {
       /* Verlauf nicht erlaubt: Zurück läuft dann nur über die Oberfläche */
     }
     setOpen({ id, focusTitle });
   };
 
-  const close = (fromPopstate = false) => {
+  const close = (fromNavigation = false) => {
     if (closing.current) return;
     closing.current = true;
     animateTo(0, () => {
       setOpen(null);
       if (rootRef.current) rootRef.current.style.transform = '';
     });
-    if (!fromPopstate && history.state?.editor) history.back();
+    if (!fromNavigation && location.hash.startsWith(HASH)) history.back();
   };
 
-  // Android-Zurücktaste und iOS-Systemgeste
+  // Android-Zurück-Geste und -Taste (und die iOS-Systemgeste, falls vorhanden)
   useEffect(() => {
-    const onPop = () => {
-      if (edRef.current) close(true);
+    if (location.hash.startsWith(HASH)) clearHash(); // Neuladen auf einer Notiz: Startseite zeigen
+    const onNav = () => {
+      if (edRef.current && !location.hash.startsWith(HASH)) close(true);
     };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  });
+    window.addEventListener('hashchange', onNav);
+    window.addEventListener('popstate', onNav);
+    return () => {
+      window.removeEventListener('hashchange', onNav);
+      window.removeEventListener('popstate', onNav);
+    };
+  }, []);
 
   // Wischen vom linken Rand zurück
   const drag = useRef<{ x: number; t: number; id: number } | null>(null);

@@ -166,7 +166,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
   const note = store.get(props.id);
   const [, force] = useState(0);
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
-  const [confirm, setConfirm] = useState(false);
+  const [ask, setAsk] = useState<Ask | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const { scrolled, onScroll } = useScrolled();
   const plusRef = useRef<HTMLButtonElement>(null);
@@ -214,7 +214,16 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
           icon: <Copy size={20} />,
           onSelect: () => void navigator.clipboard?.writeText(writeMarkdown(note)).catch(() => {}),
         },
-        { label: 'Löschen', icon: <Trash2 size={20} />, destructive: true, separatorBefore: true, onSelect: () => setConfirm(true) },
+        { label: 'Löschen', icon: <Trash2 size={20} />, destructive: true, separatorBefore: true, onSelect: () =>
+            setAsk({
+              title: `„${note.title || 'Ohne Titel'}“ wird gelöscht.`,
+              label: 'Löschen',
+              run: () => {
+                store.remove(note.id);
+                props.onBack();
+              },
+            }),
+        },
       ],
     });
 
@@ -306,7 +315,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
         {note.blocks.map((b, i) => (
           <div class="block" key={b.id}>
             <div class="block-body">
-              <BlockView block={b} focus={focusId === b.id} update={update} />
+              <BlockView block={b} focus={focusId === b.id} update={update} ask={setAsk} />
             </div>
             <button class="block-more glass" onClick={(e) => blockMenu(e as unknown as MouseEvent, i)} aria-label="Block-Optionen">
               <Ellipsis size={20} />
@@ -316,20 +325,11 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
       </div>
 
       {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
-      {confirm && (
+      {ask && (
         <Sheet
-          title={`„${note.title || 'Ohne Titel'}“ wird gelöscht.`}
-          actions={[
-            {
-              label: 'Löschen',
-              destructive: true,
-              onSelect: () => {
-                store.remove(note.id);
-                props.onBack();
-              },
-            },
-          ]}
-          onClose={() => setConfirm(false)}
+          title={ask.title}
+          actions={[{ label: ask.label, destructive: true, onSelect: ask.run }]}
+          onClose={() => setAsk(null)}
         />
       )}
     </div>
@@ -338,7 +338,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
 
 /* ───────────────────────── Blöcke ───────────────────────── */
 
-function BlockView(props: { block: Block; focus: boolean; update: () => void }) {
+function BlockView(props: { block: Block; focus: boolean; update: () => void; ask: (a: Ask) => void }) {
   const { block: b, update } = props;
 
   switch (b.kind) {
@@ -376,7 +376,7 @@ function BlockView(props: { block: Block; focus: boolean; update: () => void }) 
     case 'steps':
       return <StepsView b={b} focus={props.focus} update={update} />;
     case 'table':
-      return <TableView b={b} update={update} />;
+      return <TableView b={b} update={update} ask={props.ask} />;
 
     case 'image':
       return (
@@ -388,6 +388,13 @@ function BlockView(props: { block: Block; focus: boolean; update: () => void }) 
 }
 
 type Of<K extends Block['kind']> = Extract<Block, { kind: K }>;
+
+/** Bestätigungsblatt für Löschen mit Inhalt. */
+interface Ask {
+  title: string;
+  label: string;
+  run: () => void;
+}
 
 function ChecklistView(props: { b: Of<'checklist'>; focus: boolean; update: () => void }) {
   const { b, update } = props;
@@ -490,9 +497,22 @@ function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }
   );
 }
 
-function TableView(props: { b: Of<'table'>; update: () => void }) {
+function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) => void }) {
   const { b, update } = props;
   const cols = b.header.length;
+
+  const removeColumn = (c: number) => {
+    const run = () => {
+      b.header.splice(c, 1);
+      b.rows.forEach((r) => r.splice(c, 1));
+      update();
+    };
+    // Nur nachfragen, wenn in der Spalte etwas steht
+    if (b.rows.some((r) => r[c]?.trim())) {
+      props.ask({ title: `Spalte „${b.header[c] || c + 1}“ enthält Text und wird gelöscht.`, label: 'Spalte löschen', run });
+    } else run();
+  };
+
   return (
     <div class="card glass">
       <div class="table-scroll">
@@ -539,6 +559,18 @@ function TableView(props: { b: Of<'table'>; update: () => void }) {
               </div>
             </Fragment>
           ))}
+          {cols > 1 && (
+            <>
+              {b.header.map((h, c) => (
+                <div class="colfoot" key={'f' + c}>
+                  <button aria-label={`Spalte ${h || c + 1} entfernen`} onClick={() => removeColumn(c)}>
+                    <CircleMinus size={22} />
+                  </button>
+                </div>
+              ))}
+              <div class="colfoot" />
+            </>
+          )}
         </div>
       </div>
       <div class="tbl-actions">
