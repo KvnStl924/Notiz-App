@@ -1,5 +1,5 @@
 import { Fragment } from 'preact';
-import { useRef, useState } from 'preact/hooks';
+import { useContext, useRef, useState } from 'preact/hooks';
 import {
   ArrowDown,
   ArrowUp,
@@ -162,7 +162,11 @@ function isEmptyNote(n: Note): boolean {
 function tidy(n: Note) {
   for (const b of n.blocks) {
     if (b.kind === 'table') b.rows = b.rows.filter((r) => r.some((c) => c.trim()));
-    if (b.kind === 'steps') b.steps = b.steps.filter((x) => x.trim());
+    if (b.kind === 'steps') {
+      const keep = b.steps.map((x) => x.trim() !== '');
+      if (b.done) b.done = b.done.filter((_, i) => keep[i]);
+      b.steps = b.steps.filter((_, i) => keep[i]);
+    }
     if (b.kind === 'checklist') b.items = b.items.filter((i) => i.text.trim());
   }
   n.blocks = n.blocks.filter((b) => {
@@ -551,48 +555,82 @@ function ChecklistView(props: { b: Of<'checklist'>; focus: boolean; update: () =
 
 function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }) {
   const { b, update } = props;
-  // Schritte sind einfache Texte; stabile Schlüssel über Position + Länge reichen hier, Fokus per Index
+  const readOnly = useContext(ReadOnlyCtx);
+  // Schritte sind einfache Texte; Fokus per Index
   const [focusIdx, setFocusIdx] = useState<number | null>(props.focus ? 0 : null);
+
+  /** Fortschritt auf gleiche Länge wie die Schritte bringen, bevor Schritte eingefügt/entfernt werden. */
+  const syncDone = () => {
+    b.done = b.steps.map((_, i) => b.done?.[i] ?? false);
+    return b.done;
+  };
+  const isDone = (i: number) => readOnly && !!b.done?.[i];
+  const anyDone = readOnly && !!b.done?.some(Boolean);
+
   return (
-    <div class="card glass">
-      {b.steps.map((s, idx) => (
-        <div class="li" key={idx}>
-          <div class="step-num">{idx + 1}</div>
-          <AutoText
-            value={s}
-            placeholder={`Schritt ${idx + 1}`}
-            autoFocus={focusIdx === idx}
-            enterKeyHint="next"
-            onInput={(v) => {
-              b.steps[idx] = v;
+    <>
+      <div class="card glass">
+        {b.steps.map((s, idx) => (
+          <div
+            class={'li' + (readOnly ? ' tappable' : '') + (isDone(idx) ? ' step-done' : '')}
+            key={idx}
+            onClick={() => {
+              if (!readOnly) return;
+              syncDone()[idx] = !b.done![idx];
               update();
             }}
-            onEnter={() => {
-              b.steps.splice(idx + 1, 0, '');
-              setFocusIdx(idx + 1);
-              update();
-            }}
-            onBackspaceEmpty={() => {
-              if (b.steps.length > 1) {
-                b.steps.splice(idx, 1);
-                setFocusIdx(Math.max(0, idx - 1));
+          >
+            <div class="step-num">{isDone(idx) ? <Check size={14} strokeWidth={3.4} /> : idx + 1}</div>
+            <AutoText
+              value={s}
+              placeholder={`Schritt ${idx + 1}`}
+              autoFocus={focusIdx === idx}
+              enterKeyHint="next"
+              onInput={(v) => {
+                b.steps[idx] = v;
                 update();
-              }
-            }}
-          />
-        </div>
-      ))}
-      <button
-        class="add-line"
-        onClick={() => {
-          b.steps.push('');
-          setFocusIdx(b.steps.length - 1);
-          update();
-        }}
-      >
-        <Plus size={20} /> Schritt
-      </button>
-    </div>
+              }}
+              onEnter={() => {
+                syncDone().splice(idx + 1, 0, false);
+                b.steps.splice(idx + 1, 0, '');
+                setFocusIdx(idx + 1);
+                update();
+              }}
+              onBackspaceEmpty={() => {
+                if (b.steps.length > 1) {
+                  syncDone().splice(idx, 1);
+                  b.steps.splice(idx, 1);
+                  setFocusIdx(Math.max(0, idx - 1));
+                  update();
+                }
+              }}
+            />
+          </div>
+        ))}
+        <button
+          class="add-line"
+          onClick={() => {
+            syncDone().push(false);
+            b.steps.push('');
+            setFocusIdx(b.steps.length - 1);
+            update();
+          }}
+        >
+          <Plus size={20} /> Schritt
+        </button>
+      </div>
+      {anyDone && (
+        <button
+          class="reset-line"
+          onClick={() => {
+            b.done = b.steps.map(() => false);
+            update();
+          }}
+        >
+          Fortschritt zurücksetzen
+        </button>
+      )}
+    </>
   );
 }
 

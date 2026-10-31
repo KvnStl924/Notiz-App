@@ -926,10 +926,6 @@ svg {
 .shop-row.done .shop-name,
 .shop-row.done .shop-amount {
   color: var(--label-2);
-  text-decoration: line-through;
-}
-.shop-row.done {
-  opacity: 0.78;
 }
 .pills {
   display: flex;
@@ -960,4 +956,31 @@ svg {
 .pill.bought.on {
   background: var(--green);
   color: #fff;
+}
+
+/* ───────── Koch-Fortschritt: Schritt antippen = ausgegraut, aber gut lesbar ───────── */
+.li.tappable {
+  cursor: pointer;
+}
+.li.tappable:active {
+  background: var(--press);
+}
+.readonly .li.tappable textarea {
+  pointer-events: none; /* Tippen gilt dem Schritt, nicht dem Text */
+}
+.step-num {
+  transition: background 0.25s var(--ease);
+}
+.li.step-done .step-num {
+  background: #8e8e93;
+}
+.li.step-done textarea {
+  color: var(--label-2);
+}
+.reset-line {
+  display: block;
+  margin: -6px 4px 14px auto;
+  padding: 6px 10px;
+  color: var(--tint);
+  font-size: 15px;
 }

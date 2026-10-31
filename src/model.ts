@@ -18,7 +18,8 @@ export type Block =
   | { kind: 'text'; id: string; text: string }
   | { kind: 'checklist'; id: string; items: CheckItem[] }
   | { kind: 'table'; id: string; header: string[]; rows: string[][] }
-  | { kind: 'steps'; id: string; steps: string[] }
+  /** `done` ist der Koch-Fortschritt (Schritt abgehakt), gleich lang wie `steps`; steht nicht im Markdown */
+  | { kind: 'steps'; id: string; steps: string[]; done?: boolean[] }
   | { kind: 'image'; id: string; source: string; caption: string };
 
 export interface Note {
