@@ -80,7 +80,7 @@ lib/
 
 ## Was du einrichten musst (kann ich nicht für dich tun)
 
-1. **Firebase-Projekt** anlegen (kostenlos), Firestore und Google-Login aktivieren. Dazu brauche ich später die Dateien `google-services.json` (Android) und `GoogleService-Info.plist` (iOS).
+1. **Firebase-Projekt** anlegen (kostenlos), Firestore und Google-Login aktivieren. Dazu brauche ich später die Firebase-**Web-App-Konfiguration** (ein kurzer Block mit `apiKey`, `projectId` usw. aus den Projekteinstellungen unter „Web-App hinzufügen“).
 2. **Google-Cloud-Projekt** (dasselbe wie Firebase): Google Drive API aktivieren.
 3. **Installation**: Kein Developer-Account nötig. Die Web-Adresse wird einmal im Browser geöffnet und dann als App zum Startbildschirm hinzugefügt.
 
