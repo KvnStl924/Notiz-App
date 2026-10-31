@@ -10,6 +10,7 @@ interface Open {
 
 /** Wie weit der Hintergrund-Bildschirm beim Push nach links wandert (iOS: ~30 %). */
 const PARALLAX = 0.3;
+const hostWidth = () => document.getElementById('app')!.clientWidth;
 
 export function App() {
   const [tab, setTab] = useState<NoteType>('recipe');
@@ -24,7 +25,7 @@ export function App() {
 
   /** p = 0: Editor draußen, p = 1: Editor ganz offen. */
   const setProgress = (p: number) => {
-    const w = window.innerWidth;
+    const w = hostWidth();
     if (edRef.current) edRef.current.style.transform = `translate3d(${(1 - p) * w}px,0,0)`;
     if (rootRef.current) rootRef.current.style.transform = `translate3d(${-p * PARALLAX * w}px,0,0)`;
     if (dimRef.current) dimRef.current.style.opacity = String(p * 0.28);
@@ -50,7 +51,11 @@ export function App() {
   }, [open?.id]);
 
   const openNote = (id: string, focusTitle = false) => {
-    history.pushState({ editor: id }, '');
+    try {
+      history.pushState({ editor: id }, '');
+    } catch {
+      /* Verlauf nicht erlaubt: Zurück läuft dann nur über die Oberfläche */
+    }
     setOpen({ id, focusTitle });
   };
 
@@ -83,7 +88,7 @@ export function App() {
   const onEdgeMove = (e: PointerEvent) => {
     if (!drag.current) return;
     const dx = Math.max(0, e.clientX - drag.current.x);
-    setProgress(1 - dx / window.innerWidth);
+    setProgress(1 - dx / hostWidth());
   };
   const onEdgeUp = (e: PointerEvent) => {
     const d = drag.current;
@@ -91,7 +96,7 @@ export function App() {
     if (!d) return;
     const dx = e.clientX - d.x;
     const v = dx / Math.max(1, performance.now() - d.t); // px pro ms
-    if (dx > window.innerWidth * 0.4 || v > 0.5) close();
+    if (dx > hostWidth() * 0.4 || v > 0.5) close();
     else animateTo(1);
   };
 

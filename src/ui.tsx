@@ -70,9 +70,10 @@ export interface MenuItem {
 
 /** Kontextmenü im Glas-Stil, wächst aus dem Knopf heraus. */
 export function Menu(props: { anchor: DOMRect; items: MenuItem[]; onClose: () => void }) {
-  const w = Math.min(280, window.innerWidth - 24);
-  const left = Math.max(12, Math.min(props.anchor.right - w, window.innerWidth - w - 12));
-  const top = props.anchor.bottom + 8;
+  const host = document.getElementById('app')!.getBoundingClientRect();
+  const w = Math.min(280, host.width - 24);
+  const left = Math.max(12, Math.min(props.anchor.right - host.left - w, host.width - w - 12));
+  const top = props.anchor.bottom - host.top + 8;
   return (
     <>
       <div class="menu-backdrop" onClick={props.onClose} />

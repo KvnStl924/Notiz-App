@@ -212,7 +212,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
         {
           label: 'Als Markdown kopieren',
           icon: <Copy size={20} />,
-          onSelect: () => navigator.clipboard?.writeText(writeMarkdown(note)),
+          onSelect: () => void navigator.clipboard?.writeText(writeMarkdown(note)).catch(() => {}),
         },
         { label: 'Löschen', icon: <Trash2 size={20} />, destructive: true, separatorBefore: true, onSelect: () => setConfirm(true) },
       ],

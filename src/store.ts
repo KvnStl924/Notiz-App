@@ -1,7 +1,27 @@
 import { useEffect, useState } from 'preact/hooks';
 import { type Note } from './model';
+import { demoNotes } from './demo';
 
 const KEY = 'notiz.notes.v2';
+
+/** localStorage kann fehlen oder Fehler werfen (z. B. im eingebetteten Vorschau-Rahmen): dann nur im Arbeitsspeicher. */
+const mem = new Map<string, string>();
+const storage = {
+  get(k: string): string | null {
+    try {
+      return localStorage.getItem(k);
+    } catch {
+      return mem.get(k) ?? null;
+    }
+  },
+  set(k: string, v: string) {
+    try {
+      localStorage.setItem(k, v);
+    } catch {
+      mem.set(k, v);
+    }
+  },
+};
 
 /** Lokaler Speicher (local-first). Später kommt Firestore über dieselbe Schnittstelle dazu. */
 class Store {
@@ -11,8 +31,9 @@ class Store {
 
   constructor() {
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = storage.get(KEY);
       if (raw) for (const n of JSON.parse(raw) as Note[]) this.notes.set(n.id, n);
+      else if (import.meta.env.VITE_DEMO) for (const n of demoNotes()) this.notes.set(n.id, n);
     } catch {
       /* beschädigter Speicher: leer starten */
     }
@@ -39,7 +60,7 @@ class Store {
   }
   private persist() {
     this.version++;
-    localStorage.setItem(KEY, JSON.stringify([...this.notes.values()]));
+    storage.set(KEY, JSON.stringify([...this.notes.values()]));
     this.listeners.forEach((l) => l());
   }
 }

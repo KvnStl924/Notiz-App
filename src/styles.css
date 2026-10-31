@@ -78,7 +78,23 @@ body {
 }
 #app {
   position: fixed;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(100%, 430px);
+  overflow: hidden;
+  background: var(--bg);
+}
+/* Auf großen Bildschirmen (Vorschau am Computer) erscheint die App in Handy-Breite */
+@media (min-width: 600px) {
+  html {
+    background: color-mix(in srgb, var(--bg) 85%, gray);
+  }
+  #app {
+    box-shadow: 0 0 0 1px var(--separator), 0 24px 80px rgba(0, 0, 0, 0.35);
+  }
 }
 /* Hintergrund mit weichen Farbflächen, durch das Glas schimmert */
 #app::before {
@@ -669,12 +685,12 @@ svg {
 
 /* ───────── Menü (Kontextmenü wie iOS) und Aktionsblatt ───────── */
 .menu-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 100;
 }
 .menu {
-  position: fixed;
+  position: absolute;
   z-index: 101;
   min-width: 250px;
   border-radius: 22px;
@@ -713,14 +729,14 @@ svg {
 }
 
 .sheet-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 100;
   background: rgba(0, 0, 0, 0.32);
   animation: fade-in 0.3s var(--ease);
 }
 .sheet {
-  position: fixed;
+  position: absolute;
   left: 10px;
   right: 10px;
   bottom: calc(var(--safe-bottom) + 10px);
