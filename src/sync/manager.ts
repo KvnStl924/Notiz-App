@@ -129,7 +129,7 @@ class SyncManager {
     }
     if (!this.available) {
       try {
-        const res = await fetch('/firebase-config.json', { cache: 'no-cache' });
+        const res = await fetch('./firebase-config.json', { cache: 'no-cache' });
         if (res.ok) {
           const cfg = (await res.json()) as FirebaseConfig;
           if (cfg && cfg.projectId && cfg.apiKey) {

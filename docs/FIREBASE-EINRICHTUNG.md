@@ -30,3 +30,9 @@ Das Projekt ist auf GitHub privat, deshalb nutzen wir Netlify (kostenlos, im Han
 4. Optional: Site settings → „Change site name“ für eine schöne Adresse (z. B. `kevin-notizen.netlify.app`).
 
 Danach veröffentlicht Netlify jede Änderung, die Claude auf diesen Branch schiebt, automatisch.
+
+## Alternative: GitHub Pages (Projekt öffentlich)
+1. GitHub → Projekt → **Settings → General → Danger Zone → Change visibility → Public**.
+2. Warten, bis unter **Actions** der Lauf „App veröffentlichen“ grün ist (legt den Zweig `gh-pages` an).
+3. **Settings → Pages → Source: „Deploy from a branch“ → Branch `gh-pages`, Ordner `/ (root)` → Save.**
+4. Die Adresse lautet dann `https://<github-name>.github.io/Notiz-App/`.

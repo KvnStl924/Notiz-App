@@ -1,0 +1,37 @@
+# Baut die App und veröffentlicht sie auf GitHub Pages (Zweig "gh-pages").
+# Läuft automatisch bei jeder Änderung auf diesem Entwicklungszweig und auf "main".
+name: App veröffentlichen
+
+on:
+  push:
+    branches: [ccr-29b1054a-cmhsxu, main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: veroeffentlichen
+  cancel-in-progress: true
+
+jobs:
+  bauen-und-veroeffentlichen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: In den Zweig gh-pages schreiben
+        run: |
+          cd dist
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "App veröffentlichen ($GITHUB_SHA)"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
