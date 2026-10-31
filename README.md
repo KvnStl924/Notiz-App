@@ -27,7 +27,7 @@ npm install
 npm run dev      # Entwicklungsserver, auch im WLAN erreichbar
 npm test         # Tests (Markdown, Einkaufsliste, Sync mit Speicher-Server)
 # Sync gegen den Firestore-Emulator testen (Java nötig):
-#   npx firebase emulators:start --only firestore --project demo-notiz
+#   npx firebase-tools emulators:start --only firestore --project demo-notiz
 #   NOTIZ_EMULATOR=127.0.0.1:8180 npm test
 npm run build    # Ausgabe: dist/
 ```

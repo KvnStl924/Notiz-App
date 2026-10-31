@@ -21,3 +21,12 @@ Alles bleibt im kostenlosen Tarif (Spark): Firestore reicht für zwei Personen w
 - Er schickt Isabelle den **Einladungslink**. Sie öffnet ihn, gibt ihren Namen ein, tippt auf „Beitreten“.
 - Ab dann sehen beide Änderungen sofort, und man sieht, wer gerade in welchem Block schreibt.
 - Wer den Link kennt, hat Zugriff. Den Link also nicht weitergeben.
+
+## Veröffentlichen ohne Computer (Netlify)
+Das Projekt ist auf GitHub privat, deshalb nutzen wir Netlify (kostenlos, im Handy-Browser bedienbar):
+1. <https://app.netlify.com> → mit **GitHub** anmelden.
+2. „Add new site“ → „Import an existing project“ → **GitHub** → Zugriff auf das Projekt `Notiz-App` erlauben.
+3. **Branch to deploy:** `ccr-29b1054a-cmhsxu`. Die Build-Einstellungen liest Netlify aus `netlify.toml`. → „Deploy“.
+4. Optional: Site settings → „Change site name“ für eine schöne Adresse (z. B. `kevin-notizen.netlify.app`).
+
+Danach veröffentlicht Netlify jede Änderung, die Claude auf diesen Branch schiebt, automatisch.
