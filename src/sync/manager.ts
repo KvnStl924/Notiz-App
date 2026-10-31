@@ -5,6 +5,7 @@ import { SyncEngine, type SyncStatus } from './engine';
 import type { FirebaseConfig } from './firestore-backend';
 
 const KEY = 'notiz.sync.v1';
+const CONFIG_KEY = 'notiz.firebase.v1';
 
 interface Saved {
   space: string;
@@ -49,6 +50,30 @@ export function parseSpaceCode(input: string): string | null {
   return m ? m[1].toLowerCase() : null;
 }
 
+/**
+ * Liest den Konfigurationsblock aus der Firebase-Konsole („const firebaseConfig = { apiKey: …, projectId: … }“)
+ * oder ein JSON mit denselben Feldern. Gibt null zurück, wenn apiKey oder projectId fehlen.
+ */
+export function parseFirebaseConfig(text: string): FirebaseConfig | null {
+  const k = text.indexOf('apiKey');
+  if (k < 0) return null;
+  const start = text.lastIndexOf('{', k);
+  const end = text.indexOf('}', k);
+  if (start < 0 || end < 0) return null;
+  const body = text
+    .slice(start, end + 1)
+    .replace(/\/\/.*$/gm, '') // Kommentare
+    .replace(/'/g, '"')
+    .replace(/([{,]\s*)([A-Za-z_]\w*)\s*:/g, '$1"$2":') // Schlüssel in Anführungszeichen
+    .replace(/,\s*}/g, '}');
+  try {
+    const o = JSON.parse(body) as FirebaseConfig;
+    return o && typeof o.apiKey === 'string' && typeof o.projectId === 'string' ? o : null;
+  } catch {
+    return null;
+  }
+}
+
 export type SyncView = 'unavailable' | 'local' | SyncStatus;
 
 /**
@@ -91,17 +116,30 @@ class SyncManager {
         /* ignorieren */
       }
     }
+    // 1) in der App eingefügte Konfiguration, 2) Datei firebase-config.json neben der App
     try {
-      const res = await fetch('/firebase-config.json', { cache: 'no-cache' });
-      if (res.ok) {
-        const cfg = (await res.json()) as FirebaseConfig;
-        if (cfg && cfg.projectId && cfg.apiKey) {
-          this.config = cfg;
-          this.available = true;
-        }
+      const raw = ls.get(CONFIG_KEY);
+      const cfg = raw ? (JSON.parse(raw) as FirebaseConfig) : null;
+      if (cfg && cfg.projectId && cfg.apiKey) {
+        this.config = cfg;
+        this.available = true;
       }
     } catch {
-      /* keine Konfiguration: rein lokal */
+      /* ignorieren */
+    }
+    if (!this.available) {
+      try {
+        const res = await fetch('/firebase-config.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const cfg = (await res.json()) as FirebaseConfig;
+          if (cfg && cfg.projectId && cfg.apiKey) {
+            this.config = cfg;
+            this.available = true;
+          }
+        }
+      } catch {
+        /* keine Konfiguration: Einrichtung über das Personen-Symbol */
+      }
     }
     if (this.available && (this.pendingJoin || !this.saved)) this.panelOpen = this.pendingJoin !== null || !ls.get(KEY + '.dismissed');
     this.notify();
@@ -133,6 +171,17 @@ class SyncManager {
   private persist() {
     if (this.saved) ls.set(KEY, JSON.stringify(this.saved));
     else ls.del(KEY);
+  }
+
+  /** Firebase-Konfiguration aus dem eingefügten Text übernehmen. */
+  setConfig(text: string): boolean {
+    const cfg = parseFirebaseConfig(text);
+    if (!cfg) return false;
+    ls.set(CONFIG_KEY, JSON.stringify(cfg));
+    this.config = cfg;
+    this.available = true;
+    this.notify();
+    return true;
   }
 
   async create(name: string) {

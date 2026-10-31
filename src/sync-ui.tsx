@@ -4,7 +4,7 @@ import { parseSpaceCode, sync, useSync, type SyncView } from './sync/manager';
 import { Sheet } from './ui';
 
 const STATUS: Record<SyncView, { text: string; color: string }> = {
-  unavailable: { text: '', color: 'transparent' },
+  unavailable: { text: 'Noch nicht eingerichtet', color: 'var(--label-3)' },
   local: { text: 'Nur auf diesem Gerät', color: 'var(--label-3)' },
   connecting: { text: 'Verbinde …', color: 'var(--orange)' },
   online: { text: 'Synchronisiert', color: 'var(--green)' },
@@ -20,10 +20,9 @@ export function personColor(name: string): string {
   return palette[h % palette.length];
 }
 
-/** Runder Glas-Knopf oben links mit Status-Punkt. Nur sichtbar, wenn Sync eingerichtet werden kann. */
+/** Runder Glas-Knopf oben links mit Status-Punkt: hier richtet man den gemeinsamen Bereich ein. */
 export function SyncButton() {
   useSync();
-  if (!sync.available) return null;
   const v = sync.view;
   return (
     <button class="sync-btn nav-btn round glass" onClick={() => sync.openPanel(true)} aria-label="Gemeinsamer Bereich">
@@ -35,7 +34,7 @@ export function SyncButton() {
 
 export function SyncPanel() {
   useSync();
-  if (!sync.available || !sync.panelOpen) return null;
+  if (!sync.panelOpen) return null;
   return (
     <>
       <div class="sheet-backdrop" onClick={() => sync.openPanel(false)} />
@@ -43,8 +42,52 @@ export function SyncPanel() {
         <button class="panel-close" onClick={() => sync.openPanel(false)} aria-label="Schließen">
           <X size={20} />
         </button>
-        {sync.saved ? <Connected /> : <Setup />}
+        {!sync.available ? <Configure /> : sync.saved ? <Connected /> : <Setup />}
       </div>
+    </>
+  );
+}
+
+function Configure() {
+  const [text, setText] = useState('');
+  const [err, setErr] = useState('');
+  return (
+    <>
+      <h2 class="panel-title">Sync einrichten</h2>
+      <p class="panel-text">Damit du und Isabelle Änderungen live seht, braucht die App eine kostenlose Firebase-Datenbank. Einmalig einrichten:</p>
+      <ol class="steps-help">
+        <li>
+          Auf <b>console.firebase.google.com</b> ein Projekt anlegen.
+        </li>
+        <li>
+          <b>Build → Firestore Database</b> erstellen (Standort Europa, Produktionsmodus).
+        </li>
+        <li>
+          <b>Projekteinstellungen → Web-App (&lt;/&gt;)</b> hinzufügen und den Block <b>firebaseConfig</b> kopieren.
+        </li>
+        <li>Den Block hier einfügen.</li>
+      </ol>
+      <textarea
+        class="field area"
+        placeholder={'const firebaseConfig = {\n  apiKey: "…",\n  projectId: "…",\n  …\n};'}
+        value={text}
+        onInput={(e) => {
+          setText((e.target as HTMLTextAreaElement).value);
+          setErr('');
+        }}
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck={false}
+      />
+      <button
+        class="btn-primary"
+        disabled={!text.trim()}
+        onClick={() => (sync.setConfig(text) ? setErr('') : setErr('Das sieht nicht nach dem Firebase-Block aus. Er muss apiKey und projectId enthalten.'))}
+      >
+        Weiter
+      </button>
+      {err && <p class="panel-error">{err}</p>}
+      <p class="panel-note">Die Verbindungsdaten bleiben nur auf diesem Gerät. Der apiKey ist bei Firebase-Web-Apps nicht geheim.</p>
     </>
   );
 }
