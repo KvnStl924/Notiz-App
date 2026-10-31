@@ -26,7 +26,7 @@ function Row(props: { item: ShopItem; focus: boolean }) {
     shop.save(item);
   };
   return (
-    <SwipeRow class="shop-wrap" onDelete={() => shop.remove(item.id)}>
+    <SwipeRow class={'shop-wrap' + (isDone(item) ? ' done' : '')} onDelete={() => shop.remove(item.id)}>
       <div class={'shop-row' + (isDone(item) ? ' done' : '')}>
         <div class="shop-line">
           {custom ? (

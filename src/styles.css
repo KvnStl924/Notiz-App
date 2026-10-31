@@ -923,9 +923,12 @@ svg {
   font-size: 15px;
   font-variant-numeric: tabular-nums;
 }
-.shop-row.done .shop-name,
-.shop-row.done .shop-amount {
-  color: var(--label-2);
+/* Erledigt: die ganze Zeile wird ausgegraut (Text und Hintergrund), die beiden Knöpfe bleiben in voller Farbe */
+.shop-wrap.done .row {
+  background: var(--fill);
+}
+.shop-row.done .shop-line {
+  opacity: 0.5;
 }
 .pills {
   display: flex;
