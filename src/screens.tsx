@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronLeft,
+  Check,
   ChevronRight,
   CircleMinus,
   Copy,
@@ -15,6 +16,7 @@ import {
   Minus,
   Plus,
   Search,
+  ShoppingCart,
   Table2,
   Trash2,
   Type,
@@ -22,10 +24,11 @@ import {
 } from 'lucide-preact';
 import { type Block, type Note, type NoteType, mk, newRecipe } from './model';
 import { writeMarkdown } from './markdown';
-import { store, useNotes } from './store';
-import { AutoText, CheckCircle, Menu, type MenuItem, Sheet, SwipeRow, useScrolled } from './ui';
+import { shop, store, useNotes } from './store';
+import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 
-export const TAB_TITLE: Record<NoteType, string> = { recipe: 'Rezepte', note: 'Notizen' };
+export type Tab = NoteType | 'shopping';
+export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notizen', shopping: 'Einkauf' };
 
 /* ───────────────────────── Liste ───────────────────────── */
 
@@ -155,6 +158,28 @@ function isEmptyNote(n: Note): boolean {
   });
 }
 
+/** Räumt beim Speichern leere Zeilen und Blöcke weg. */
+function tidy(n: Note) {
+  for (const b of n.blocks) {
+    if (b.kind === 'table') b.rows = b.rows.filter((r) => r.some((c) => c.trim()));
+    if (b.kind === 'steps') b.steps = b.steps.filter((x) => x.trim());
+    if (b.kind === 'checklist') b.items = b.items.filter((i) => i.text.trim());
+  }
+  n.blocks = n.blocks.filter((b) => {
+    switch (b.kind) {
+      case 'heading':
+      case 'text':
+        return b.text.trim() !== '';
+      case 'steps':
+        return b.steps.length > 0;
+      case 'checklist':
+        return b.items.length > 0;
+      default:
+        return true;
+    }
+  });
+}
+
 /** Vorlage anlegen und speichern. */
 export function createNote(type: NoteType): Note {
   const n = type === 'recipe' ? newRecipe() : mk.note({ blocks: [mk.text('')] });
@@ -162,13 +187,23 @@ export function createNote(type: NoteType): Note {
   return n;
 }
 
-export function EditorScreen(props: { id: string; backLabel: string; onBack: () => void; focusTitle: boolean }) {
+export function EditorScreen(props: {
+  id: string;
+  backLabel: string;
+  onBack: () => void;
+  focusTitle: boolean;
+  onShowShopping: () => void;
+}) {
   const note = store.get(props.id);
   const [, force] = useState(0);
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
   const [ask, setAsk] = useState<Ask | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const { scrolled, onScroll } = useScrolled();
+  // Rezepte öffnen im Lesemodus (nichts lässt sich versehentlich ändern); neue Rezepte direkt im Bearbeiten-Modus
+  const [editing, setEditing] = useState(!note || note.type !== 'recipe' || props.focusTitle);
+  const [toast, setToast] = useState<{ text: string; action?: { label: string; run: () => void } } | null>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
   const plusRef = useRef<HTMLButtonElement>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
 
@@ -178,10 +213,43 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
     force((n) => n + 1);
   };
 
+  const readOnly = note.type === 'recipe' && !editing;
+
   const back = () => {
     if (isEmptyNote(note)) store.remove(note.id);
+    else if (note.type === 'recipe') tidy(note), store.save(note);
     props.onBack();
   };
+
+  const save = () => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    tidy(note);
+    update();
+    setMenu(null);
+    setEditing(false);
+  };
+
+  const showToast = (text: string, action?: { label: string; run: () => void }) => {
+    setToast({ text, action });
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 4000);
+  };
+
+  const addToShopping = () => {
+    const r = shop.addFromRecipe(note);
+    force((n) => n + 1);
+    const n = r.added.length;
+    const text =
+      r.found === 0
+        ? 'Keine Zutaten gefunden. Trage sie in die Zutaten-Tabelle ein.'
+        : n > 0
+          ? `${n} ${n === 1 ? 'Zutat' : 'Zutaten'} zur Einkaufsliste hinzugefügt`
+          : r.updated.length > 0
+            ? 'Mengen auf der Einkaufsliste aktualisiert'
+            : 'Alle Zutaten stehen schon auf der Einkaufsliste';
+    showToast(text, r.found ? { label: 'Anzeigen', run: props.onShowShopping } : undefined);
+  };
+  const onList = note.type === 'recipe' && shop.forRecipe(note.id).length > 0;
 
   const addBlock = (b: Block) => {
     note.blocks.push(b);
@@ -209,6 +277,9 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
     setMenu({
       anchor: moreRef.current!.getBoundingClientRect(),
       items: [
+        ...(note.type === 'recipe'
+          ? [{ label: 'Zur Einkaufsliste', icon: <ShoppingCart size={20} />, onSelect: addToShopping }]
+          : []),
         {
           label: 'Als Markdown kopieren',
           icon: <Copy size={20} />,
@@ -261,22 +332,36 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
           <ChevronLeft size={26} strokeWidth={2.2} />
           <span>{props.backLabel}</span>
         </button>
-        <div class="glass" style={{ borderRadius: '22px', display: 'flex' }}>
-          <button ref={moreRef} class="nav-btn round tint" onClick={showMoreMenu} aria-label="Mehr">
-            <Ellipsis size={22} />
-          </button>
-          <button ref={plusRef} class="nav-btn round tint" onClick={showAddMenu} aria-label="Block hinzufügen">
-            <Plus size={24} strokeWidth={2.2} />
-          </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <div class="glass" style={{ borderRadius: '22px', display: 'flex' }}>
+            <button ref={moreRef} class="nav-btn round tint" onClick={showMoreMenu} aria-label="Mehr">
+              <Ellipsis size={22} />
+            </button>
+            {readOnly ? (
+              <button class="nav-btn tint" style={{ fontWeight: 500 }} onClick={() => setEditing(true)}>
+                Bearbeiten
+              </button>
+            ) : (
+              <button ref={plusRef} class="nav-btn round tint" onClick={showAddMenu} aria-label="Block hinzufügen">
+                <Plus size={24} strokeWidth={2.2} />
+              </button>
+            )}
+          </div>
+          {note.type === 'recipe' && editing && (
+            <button class="nav-btn prominent" onClick={save}>
+              Speichern
+            </button>
+          )}
         </div>
       </div>
 
-      <div class={'scroll' + (scrolled ? ' scrolled' : '')} onScroll={onScroll}>
+      <ReadOnlyCtx.Provider value={readOnly}>
+      <div class={'scroll' + (scrolled ? ' scrolled' : '') + (readOnly ? ' readonly' : '')} onScroll={onScroll}>
         <AutoText
           class="title-input"
           value={note.title}
           placeholder="Titel"
-          autoFocus={props.focusTitle}
+          autoFocus={props.focusTitle && editing}
           singleLine
           enterKeyHint="next"
           onInput={(v) => {
@@ -285,7 +370,19 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
           }}
         />
 
-        {note.type === 'recipe' && (
+        {note.type === 'recipe' && readOnly && (
+          <>
+            <div class="meta-row" style={{ marginBottom: '12px' }}>
+              <span>{note.servings ?? 1} Portionen</span>
+            </div>
+            <button class="cta glass" onClick={addToShopping}>
+              <ShoppingCart size={22} />
+              <span>{onList ? 'Einkaufsliste aktualisieren' : 'Zur Einkaufsliste hinzufügen'}</span>
+              {onList && <Check size={20} strokeWidth={2.6} style={{ marginLeft: 'auto', color: 'var(--green)' }} />}
+            </button>
+          </>
+        )}
+        {note.type === 'recipe' && !readOnly && (
           <div class="meta-row">
             <span>Portionen</span>
             <div class="stepper glass">
@@ -315,7 +412,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
         {note.blocks.map((b, i) => (
           <div class="block" key={b.id}>
             <div class="block-body">
-              <BlockView block={b} focus={focusId === b.id} update={update} ask={setAsk} />
+              <BlockView block={b} focus={focusId === b.id} update={update} ask={setAsk} readOnly={readOnly} />
             </div>
             <button class="block-more glass" onClick={(e) => blockMenu(e as unknown as MouseEvent, i)} aria-label="Block-Optionen">
               <Ellipsis size={20} />
@@ -323,7 +420,9 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
           </div>
         ))}
       </div>
+      </ReadOnlyCtx.Provider>
 
+      {toast && <Toast text={toast.text} action={toast.action} />}
       {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
       {ask && (
         <Sheet
@@ -338,7 +437,7 @@ export function EditorScreen(props: { id: string; backLabel: string; onBack: () 
 
 /* ───────────────────────── Blöcke ───────────────────────── */
 
-function BlockView(props: { block: Block; focus: boolean; update: () => void; ask: (a: Ask) => void }) {
+function BlockView(props: { block: Block; focus: boolean; update: () => void; ask: (a: Ask) => void; readOnly: boolean }) {
   const { block: b, update } = props;
 
   switch (b.kind) {
@@ -376,7 +475,7 @@ function BlockView(props: { block: Block; focus: boolean; update: () => void; as
     case 'steps':
       return <StepsView b={b} focus={props.focus} update={update} />;
     case 'table':
-      return <TableView b={b} update={update} ask={props.ask} />;
+      return <TableView b={b} update={update} ask={props.ask} readOnly={props.readOnly} />;
 
     case 'image':
       return (
@@ -497,8 +596,9 @@ function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }
   );
 }
 
-function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) => void }) {
+function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) => void; readOnly: boolean }) {
   const { b, update } = props;
+  const ro = props.readOnly;
   const cols = b.header.length;
 
   const removeColumn = (c: number) => {
@@ -516,7 +616,7 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
   return (
     <div class="card glass">
       <div class="table-scroll">
-        <div class="tbl" style={{ gridTemplateColumns: `repeat(${cols}, minmax(96px, 1fr)) 44px` }}>
+        <div class="tbl" style={{ gridTemplateColumns: `repeat(${cols}, minmax(96px, 1fr))${ro ? '' : ' 44px'}` }}>
           {b.header.map((h, c) => (
             <div class="th" key={'h' + c}>
               <AutoText
@@ -530,7 +630,7 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
               />
             </div>
           ))}
-          <div class="th del" />
+          {!ro && <div class="th del" />}
           {b.rows.map((r, ri) => (
             <Fragment key={'r' + ri}>
               {r.map((cell, c) => (
@@ -544,6 +644,7 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
                   />
                 </div>
               ))}
+              {!ro && (
               <div class="del" key={`d${ri}`}>
                 {b.rows.length > 1 && (
                   <button
@@ -557,9 +658,10 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
                   </button>
                 )}
               </div>
+              )}
             </Fragment>
           ))}
-          {cols > 1 && (
+          {!ro && cols > 1 && (
             <>
               {b.header.map((h, c) => (
                 <div class="colfoot" key={'f' + c}>

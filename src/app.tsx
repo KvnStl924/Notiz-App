@@ -1,11 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
-import { FileText, Utensils } from 'lucide-preact';
-import type { NoteType } from './model';
-import { createNote, EditorScreen, ListScreen, TAB_TITLE } from './screens';
+import { FileText, ShoppingCart, Utensils } from 'lucide-preact';
+import { isDone, type NoteType } from './model';
+import { createNote, EditorScreen, ListScreen, TAB_TITLE, type Tab } from './screens';
+import { ShopScreen } from './shop-screen';
+import { useShopping } from './store';
 
 interface Open {
   id: string;
   focusTitle: boolean;
+  /** Beschriftung des Zurück-Knopfes, beim Öffnen festgehalten */
+  backLabel: string;
 }
 
 /** Wie weit der Hintergrund-Bildschirm beim Push nach links wandert (iOS: ~30 %). */
@@ -22,7 +26,8 @@ const clearHash = () => {
 const hostWidth = () => document.getElementById('app')!.clientWidth;
 
 export function App() {
-  const [tab, setTab] = useState<NoteType>('recipe');
+  const [tab, setTab] = useState<Tab>('recipe');
+  const openShopping = useShopping().filter((i) => !isDone(i)).length;
   const [open, setOpen] = useState<Open | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -66,7 +71,7 @@ export function App() {
     } catch {
       /* Verlauf nicht erlaubt: Zurück läuft dann nur über die Oberfläche */
     }
-    setOpen({ id, focusTitle });
+    setOpen({ id, focusTitle, backLabel: TAB_TITLE[tabRef.current] });
   };
 
   const close = (fromNavigation = false) => {
@@ -116,7 +121,7 @@ export function App() {
   };
 
   const newNote = () => {
-    const n = createNote(tab);
+    const n = createNote(tab as NoteType);
     openNote(n.id, true);
   };
 
@@ -124,13 +129,26 @@ export function App() {
     <>
       <div class="screen" ref={rootRef}>
         <div key={tab} style={{ display: 'contents', animation: 'fade-in .25s var(--ease)' }}>
-          <ListScreen type={tab} onOpen={(id) => openNote(id)} onNew={newNote} />
+          {tab === 'shopping' ? (
+            <ShopScreen />
+          ) : (
+            <ListScreen type={tab} onOpen={(id) => openNote(id)} onNew={newNote} />
+          )}
         </div>
 
         <nav class="tabbar glass" aria-label="Bereiche">
-          {(['recipe', 'note'] as NoteType[]).map((t) => (
+          {(['recipe', 'note', 'shopping'] as Tab[]).map((t) => (
             <button key={t} class={'tab' + (tab === t ? ' active' : '')} onClick={() => setTab(t)}>
-              {t === 'recipe' ? <Utensils size={26} strokeWidth={1.9} /> : <FileText size={26} strokeWidth={1.9} />}
+              <span class="tab-icon">
+                {t === 'recipe' ? (
+                  <Utensils size={26} strokeWidth={1.9} />
+                ) : t === 'note' ? (
+                  <FileText size={26} strokeWidth={1.9} />
+                ) : (
+                  <ShoppingCart size={26} strokeWidth={1.9} />
+                )}
+                {t === 'shopping' && openShopping > 0 && <span class="badge">{openShopping}</span>}
+              </span>
               {TAB_TITLE[t]}
             </button>
           ))}
@@ -145,9 +163,13 @@ export function App() {
           <EditorScreen
             key={open.id}
             id={open.id}
-            backLabel={TAB_TITLE[tabRef.current]}
+            backLabel={open.backLabel}
             focusTitle={open.focusTitle}
             onBack={() => close()}
+            onShowShopping={() => {
+              setTab('shopping');
+              close();
+            }}
           />
         </div>
       )}

@@ -1,6 +1,9 @@
-import type { ComponentChildren } from 'preact';
-import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { createContext, type ComponentChildren } from 'preact';
+import { useContext, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { Check } from 'lucide-preact';
+
+/** Gilt für alle Textfelder darunter: nur lesen (Rezept im Lesemodus). */
+export const ReadOnlyCtx = createContext(false);
 
 /** Textfeld, das mit dem Inhalt wächst. Nutzt das echte iOS-Textfeld (Tastatur, Lupe, Rechtschreibung). */
 export function AutoText(props: {
@@ -15,8 +18,10 @@ export function AutoText(props: {
   /** Rückschritt in leerem Feld */
   onBackspaceEmpty?: () => void;
   singleLine?: boolean;
+  onBlur?: () => void;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const readOnly = useContext(ReadOnlyCtx);
   const fit = () => {
     const el = ref.current;
     if (!el) return;
@@ -32,6 +37,8 @@ export function AutoText(props: {
     <textarea
       ref={ref}
       rows={1}
+      readOnly={readOnly}
+      onBlur={props.onBlur}
       class={props.class}
       value={props.value}
       placeholder={props.placeholder}
@@ -132,7 +139,7 @@ export function Sheet(props: {
 }
 
 /** Zeile, die sich nach links wischen lässt und „Löschen“ zeigt (wie in Mail und Notizen). */
-export function SwipeRow(props: { onTap: () => void; onDelete: () => void; children: ComponentChildren }) {
+export function SwipeRow(props: { onTap?: () => void; onDelete: () => void; children: ComponentChildren; class?: string }) {
   const REVEAL = 96;
   const [x, setX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -164,14 +171,14 @@ export function SwipeRow(props: { onTap: () => void; onDelete: () => void; child
     if (!s) return;
     if (!s.moved) {
       if (x < 0) setX(0);
-      else props.onTap();
+      else props.onTap?.();
       return;
     }
     setX(x < -REVEAL / 2 ? -REVEAL : 0);
   };
 
   return (
-    <div class="row-wrap">
+    <div class={'row-wrap ' + (props.class ?? '')}>
       <button
         class="row-del"
         style={{ width: `${Math.max(0, -x)}px`, transition: dragging ? 'none' : 'width 0.4s var(--ease)' }}
@@ -211,4 +218,18 @@ export function useScrolled() {
     scrolled,
     onScroll: (e: Event) => set((e.currentTarget as HTMLElement).scrollTop > 36),
   };
+}
+
+/** Kurzer Hinweis unten im Glas-Stil, optional mit Knopf. */
+export function Toast(props: { text: string; action?: { label: string; run: () => void } }) {
+  return (
+    <div class="toast glass strong" role="status">
+      <span>{props.text}</span>
+      {props.action && (
+        <button onClick={props.action.run} style={{ color: 'var(--tint)', fontWeight: 600 }}>
+          {props.action.label}
+        </button>
+      )}
+    </div>
+  );
 }

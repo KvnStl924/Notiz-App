@@ -64,3 +64,18 @@ export function newRecipe(): Note {
     ],
   });
 }
+
+/** Ein Eintrag der Einkaufsliste. `home` = habe ich zuhause, `bought` = im Laden gekauft. */
+export interface ShopItem {
+  id: string;
+  name: string;
+  amount: string;
+  /** null = eigener Eintrag, sonst ID des Rezepts, aus dem er stammt */
+  recipeId: string | null;
+  recipeTitle: string;
+  home: boolean;
+  bought: boolean;
+  addedAt: string; // ISO
+}
+
+export const isDone = (i: ShopItem) => i.home || i.bought;
