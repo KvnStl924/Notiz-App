@@ -7,7 +7,8 @@ Es gibt **eine** installierbare Web-App (PWA). Beide nutzen dieselbe App, sie si
 
 | Thema | Entscheidung |
 |---|---|
-| Technologie | **Flutter für das Web, als installierbare App (PWA)**. Kein App-Store, kein Apple-Developer-Account nötig (Entscheidung nach Klärung der iOS-Kosten) |
+| Technologie | **Native Web-Technik (TypeScript, Preact, Vite) als installierbare App (PWA)**. Kein App-Store, kein Apple-Developer-Account nötig. Von Flutter umgestellt, weil nur echtes HTML/CSS die echte iPhone-Schrift (SF), das iOS-Scrollen, die Tastatur und Glas-Unschärfe nutzt |
+| Optik | iOS-26/27-Stil: Liquid-Glass-Karten, schwebende Tab-Leiste, große Titel, Push-Animation mit Wisch-zurück, Hell/Dunkel folgt dem Gerät. iPhone nutzt die echte SF-Schrift, Android die ähnliche Schrift Inter |
 | Installation | Android: Chrome → „App installieren“. iPhone: Safari → Teilen → „Zum Home-Bildschirm“. Beide öffnen im Vollbild ohne Browser-Leiste |
 | Hosting | Firebase Hosting (kostenlos, HTTPS) |
 | Offline | eigener Service Worker (Netz zuerst, sonst zuletzt geladene Version) |
@@ -66,12 +67,15 @@ portionen: 4
 ## Architektur
 
 ```
-lib/
-  main.dart
-  models/        Note, Block-Typen (Text, Checkliste, Tabelle, Bild, Rezept)
-  data/          lokale Datenbank, Firestore-Repository, Drive-Sync
-  markdown/      Notiz <-> Markdown (Parser und Writer)
-  ui/            Notizliste, Editor, Block-Widgets
+src/
+  model.ts       Note und Block-Typen (Text, Überschrift, Checkliste, Tabelle, Schritte, Bild)
+  markdown.ts    Notiz <-> Markdown (Parser und Writer, getestet)
+  store.ts       lokaler Speicher; später Firestore-Abgleich und Drive-Sync
+  app.tsx        Navigation, Push-Animation, Wisch-zurück
+  screens.tsx    Liste und Editor mit allen Blöcken
+  ui.tsx         Textfeld, Kontextmenü, Aktionsblatt, Wisch-Zeile
+  styles.css     Design-System (Farben, Glas, Typografie)
+public/          Manifest, Service Worker (offline), App-Icons
 ```
 
 - **Local-first**: Die App liest und schreibt zuerst lokal, Firestore gleicht im Hintergrund ab.
@@ -88,8 +92,15 @@ Grenzen einer PWA auf dem iPhone: Push-Benachrichtigungen gibt es erst nach der 
 
 ## Bauplan
 
-1. Projekt-Gerüst, Datenmodell, Markdown-Parser mit Tests
-2. Notizliste und Editor mit allen Block-Typen (lokal)
+1. Projekt-Gerüst, Datenmodell, Markdown-Parser mit Tests (fertig)
+2. Notizliste und Editor im iOS-Stil mit allen Block-Typen, lokal (fertig; Bilder fehlen noch)
 3. Firebase-Login und Live-Sync
 4. Drive-Backup und Import von außen
 5. Veröffentlichung auf Firebase Hosting, App-Icon
+
+## Grenzen beim iOS-Look im Browser
+
+- **Lichtbrechung des Glases** (verzerrte Ränder) gibt es im Browser nur in Chromium, nicht in Safari. Umgesetzt sind Unschärfe, Farbsättigung, Lichtkante und Schatten.
+- **SF Symbols** dürfen nicht im Web verwendet werden. Die Icons sind Lucide (frei lizenziert, ähnlicher Strich).
+- Apple-Logos und -Marken werden nicht kopiert.
+- Für iOS 27 gibt es noch keine Apple-Unterlagen im Repository. Der Stil folgt dem, was von Liquid Glass bekannt ist, und dem Beispiel-Screenshot.
