@@ -92,8 +92,7 @@ export function ShopScreen() {
     g.items.push(i);
   }
   groups.sort((a, b) => Number(!a.recipe) - Number(!b.recipe));
-  // Offene Posten zuerst, erledigte darunter
-  for (const g of groups) g.items.sort((a, b) => Number(isDone(a)) - Number(isDone(b)));
+  // Reihenfolge bleibt wie hinzugefügt: abgehakte Posten wandern nicht
 
   const showMenu = (e: MouseEvent) =>
     setMenu({
