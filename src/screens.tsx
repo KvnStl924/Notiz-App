@@ -97,6 +97,10 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
         <div class="navbar-bg" />
         <div class="nav-title">{TAB_TITLE[props.type]}</div>
         <span />
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button class="nav-btn round glass tint" onClick={() => setTrashOpen(true)} aria-label="Papierkorb">
+            <Trash2 size={21} />
+          </button>
         <button
           class="nav-btn round glass tint"
           aria-label="Neu"
@@ -117,13 +121,13 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
                 ...(props.type === 'recipe'
                   ? [{ label: 'Rezept-Eingang', icon: <Inbox size={20} />, onSelect: () => setInboxOpen(true) }]
                   : []),
-                { label: 'Papierkorb', icon: <Trash2 size={20} />, separatorBefore: true, onSelect: () => setTrashOpen(true) },
               ],
             })
           }
         >
           <Plus size={24} strokeWidth={2.2} />
         </button>
+        </div>
       </div>
       <div class={'scroll' + (scrolled ? ' scrolled' : '')} onScroll={onScroll}>
         <h1 class="large-title">{TAB_TITLE[props.type]}</h1>

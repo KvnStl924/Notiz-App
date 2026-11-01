@@ -323,7 +323,7 @@ svg {
   position: absolute;
   left: 50%;
   /* Auf dem iPhone liegt der Bereich unten bei ca. 34 pt: nur einen Bruchteil davon nutzen, damit die Leiste unten sitzt */
-  bottom: calc(var(--safe-bottom) * 0.2 + 8px);
+  bottom: calc(var(--safe-bottom) + 10px);
   transform: translateX(-50%);
   z-index: 30;
   display: flex;
