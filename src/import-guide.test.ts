@@ -5,7 +5,8 @@ import { ingredientsOf } from './shopping';
 
 // Das Beispiel in der Anleitung für andere Chats muss sich wirklich importieren lassen.
 describe('Anleitung REZEPT-IMPORT.md', () => {
-  const guide = readFileSync('docs/REZEPT-IMPORT.md', 'utf8');
+  const lf = (t: string) => t.replace(/\r\n/g, '\n'); // robust gegen Windows-Zeilenenden
+  const guide = lf(readFileSync('docs/REZEPT-IMPORT.md', 'utf8'));
   const example = guide.split('```markdown\n')[1].split('```')[0];
 
   it('das Beispiel wird zu einem Rezept mit Zutaten und Schritten', () => {
@@ -18,6 +19,6 @@ describe('Anleitung REZEPT-IMPORT.md', () => {
   });
   it('das eingebettete Programm entspricht der Datei im Projekt', () => {
     const code = guide.split('```python\n')[1].replace(/```\n$/, '');
-    expect(code).toBe(readFileSync('tools/rezept-senden.py', 'utf8'));
+    expect(code).toBe(lf(readFileSync('tools/rezept-senden.py', 'utf8')));
   });
 });

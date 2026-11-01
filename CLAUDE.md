@@ -28,9 +28,11 @@ Ablauf: `VITE_DEMO=1 npx vite build --outDir /tmp/demo-dist`, alles in eine HTML
   automatisch gebaut, getestet und veröffentlicht: `.github/workflows/veroeffentlichen.yml`).
 - Firebase-Projekt `notiz-app-98dd6` (Firestore, Regeln in `firestore.rules`), kein Login; Zugriff über den
   Bereichs-Code im Einladungslink.
-- Rezept-Eingang: Google-Tabelle „Notiz-App Rezept-Eingang“ in Kevins Drive (Spalten Zeit, Titel, Rezept); Claude hängt Zeilen an,
-  die App liest sie über `docs.google.com/.../gviz/tq?tqx=out:csv` (Tabelle muss „Jeder mit dem Link: Betrachter“ sein) und legt neue Rezepte an
-  (`src/inbox.ts`). Die Tabellen-ID gehört nicht in dieses öffentliche Projekt.
+- Rezept-Eingang: Google-Tabelle „Notiz-App Rezept-Eingang“ in Kevins Drive (Spalten Zeit, Titel, Rezept); Claude (in anderen Chats) hängt Zeilen an,
+  die App liest sie über `docs.google.com/.../gviz/tq?tqx=out:csv` (Tabelle ist „Jeder mit dem Link: Betrachter“) und legt neue Rezepte an
+  (`src/inbox.ts`). Auf Wunsch von Kevin ist die Tabelle **fest in der App verbunden** (`DEFAULT_SHEET_ID`, steht bewusst im Quellcode) und wird alle
+  5 Sekunden geprüft, solange die App sichtbar ist. Funktioniert mit der echten Tabelle.
 - Rezept-Import aus anderen Chats: `docs/REZEPT-IMPORT.md` (Anleitung) und `tools/rezept-senden.py`.
   Die Anleitung enthält das Programm als Kopie; `src/import-guide.test.ts` prüft, dass beides übereinstimmt.
-- Offen: Drive-Anbindung, Bilder, Formatierung; Test auf echten Handys.
+- Zeilenenden immer LF (`.gitattributes`). Nach jedem Push den Lauf unter Actions prüfen: Ein roter Test blockiert die Veröffentlichung.
+- Offen: Bilder, Formatierung, Test auf echten Handys (Details in `AGENTS.md`).

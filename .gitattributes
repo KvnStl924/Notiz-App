@@ -1,0 +1,3 @@
+# Einheitliche Zeilenenden (LF), egal auf welchem Betriebssystem bearbeitet wird
+* text=auto eol=lf
+*.png binary

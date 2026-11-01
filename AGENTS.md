@@ -46,8 +46,8 @@ NOTIZ_EMULATOR=127.0.0.1:8180 npm test                                     # fü
 **Vor jeder Änderung:** `npx tsc --noEmit && npm test` muss grün sein. CI (`.github/workflows/veroeffentlichen.yml`)
 führt `npm ci`, `npm test`, `npm run build` aus und veröffentlicht nur bei Erfolg.
 
-**Zuerst prüfen (Abschnitt 11):** Ob die Live-Seite https://kvnstl924.github.io/Notiz-App/ gerade auf dem neuesten
-Stand ist. Zum Stand dieser Übergabe hängt die Auslieferung bei GitHub (nicht der Code).
+**Zuerst prüfen (Abschnitt 11):** Ob die Live-Seite https://kvnstl924.github.io/Notiz-App/ auf dem neuesten Stand ist und
+die letzten Läufe unter Actions grün sind.
 
 ## 3. Zusammenarbeit mit Kevin (wichtig, hat mehrfach Ärger gegeben)
 
@@ -164,7 +164,9 @@ kann ein Häkchen verlieren (Block-Granularität). Tombstones werden nie aufger�
   (Text im Chat geben) – oder es wird ein Deploy per Service-Account in der CI eingerichtet.
 - Firebase-Projekt: `notiz-app-98dd6`, Datenbank `(default)`, Standort `eur3`, Tarif **Spark (kostenlos)**, Firestore-Edition **Standard**.
   Die Web-Konfiguration (`public/firebase-config.json`) ist bei Firebase-Web-Apps **nicht geheim**.
-- Nie Geheimnisse ins (öffentliche!) Repo: weder Einladungscodes noch die Tabellen-ID des Rezept-Eingangs noch Tokens.
+- Nie Geheimnisse ins (öffentliche!) Repo: keine Einladungscodes, keine Tokens. **Ausnahme auf Wunsch von Kevin:** Die ID der Rezept-Eingangs-Tabelle
+  steht bewusst im Quellcode (`DEFAULT_SHEET_ID` in `src/inbox.ts`), damit sich die App ohne Einrichtung verbindet. Folge: Wer das Projekt
+  liest, kann die Rezepte in dieser Tabelle lesen (nur lesen, nicht ändern). Das sind Rezepte, keine privaten Daten; trotzdem nichts Privates dort ablegen.
 - Das Repository ist **öffentlich** (nötig für kostenloses GitHub Pages). In Dateien stehen Vornamen (Kevin, Isabelle).
 
 ## 8. Rezept-Eingang und Import (wie Claude Rezepte in die App bringt)
@@ -178,8 +180,10 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
    Tabelle auf **„Jeder mit dem Link: Betrachter“**.
    **Doppelte verhindern:** Notiz-ID und Block-IDs sind aus dem Zeileninhalt abgeleitet (SHA-256), und die App prüft lokale Notizen,
    `engine.knows(id)` (auch gelöschte) und die lokale Liste `imported`.
-   **Stand:** gebaut und im Browser mit nachgebauter Google-Antwort getestet; mit der **echten** Tabelle noch **nicht**
-   (Kevin hat sie noch nicht freigegeben). In der Tabelle steht eine Test-Zeile „Test-Rezept“, die Kevin nach dem ersten Erfolg löschen soll.
+   **Stand (01.11.2026):** Funktioniert mit der **echten** Tabelle. Die Tabelle ist freigegeben, Google liefert `text/csv` mit CORS-Header,
+   und ein anderer Chat hat bereits echte Rezepte eingetragen (Zitronen-Kichererbsen-Pfanne, Cremige Tomaten-Orzo-Pfanne); `rowsFromCsv` und
+   `noteFromRow` lesen sie korrekt (Zutaten-Tabelle, Schritte). In der Tabelle steht außerdem noch die Test-Zeile „Test-Rezept“, die Kevin
+   löschen kann. **Nicht getestet:** das Verhalten auf echten Handys und bei beiden Geräten gleichzeitig.
 2. **„Aus Text einfügen“** (Plus-Menü): Markdown einfügen → neue Notiz (`src/import.ts`).
 3. **`tools/rezept-senden.py`**: schreibt direkt per Firestore-REST in den Bereich (braucht den Einladungslink und Internet).
    Die Anleitung enthält das Programm als Kopie; `src/import-guide.test.ts` prüft, dass beide **identisch** sind –
@@ -214,26 +218,23 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 - Die **Vorschau-Seite** (Claude-Artifact, abgeschotteter Rahmen ohne Netz/Service-Worker) ist ein Claude-spezifischer Weg
   (siehe `CLAUDE.md`) und für Codex **nicht nötig**.
 
-## 11. Aktuelles Problem: GitHub-Pages-Auslieferung hängt (zuerst klären)
+## 11. GitHub-Pages-Auslieferung (Stand 01.11.2026: läuft wieder)
 
-- Die Auslieferung von Commit `951ec7c` ging noch durch und ist die Version, die live ist. Danach schlugen die automatischen
-  „pages build and deployment“-Läufe für `c3d98ef` und `fe718b6` fehl:
-  *„Deployment request failed … due to in progress deployment. Please cancel 465d789… first“*. Die Auslieferung `465d789…` steht
-  bei GitHub dauerhaft auf „in progress“. Die eigenen Läufe („App veröffentlichen“) sind **grün**, `gh-pages` ist aktuell –
-  nur die Seite zeigt den Stand von `951ec7c` (enthält **nicht** den Update-Hinweis und **nicht** den Rezept-Eingang).
-- Erneutes Anstoßen half nicht, und aus der Umgebung von Claude ist die Pages-API gesperrt (kein Abbruch möglich).
-- **Lösung (braucht Kevin, am Handy, ca. 2 Minuten):** GitHub → Projekt → Settings → Pages → „⋯“ → **Unpublish site**, danach wieder
-  **Source: Deploy from a branch → `gh-pages` → `/ (root)` → Save**. Danach den letzten fehlgeschlagenen Lauf „pages build and
-  deployment“ erneut ausführen oder einen neuen Push machen. Kevin wurde das bereits erklärt; ob er es getan hat, ist offen.
-- **Dauerhafter besserer Weg (empfohlen):** Auf den offiziellen Ablauf `actions/upload-pages-artifact` + `actions/deploy-pages`
-  umstellen (Settings → Pages → Source: **GitHub Actions**), mit `concurrency: { group: pages, cancel-in-progress: false }`.
-  Dann entfällt der Zweig `gh-pages` und solche hängenden Auslieferungen sind besser steuerbar.
-- Prüfen, ob live die neue Version läuft: `curl -s https://kvnstl924.github.io/Notiz-App/ | grep -o 'assets/index-[^"]*\.js'`, dann in dieser
-  Datei nach „Rezept-Eingang“ suchen.
+- Zwischenzeitlich hing die Auslieferung: Eine frühere Pages-Auslieferung blieb bei GitHub auf „in progress“ und blockierte neue
+  (*„Deployment request failed … due to in progress deployment. Please cancel … first“*). Aus der Claude-Umgebung ist die Pages-API
+  gesperrt, Abbrechen war nicht möglich. Behoben wurde es offenbar durch **Unpublish site** und erneutes Einstellen von
+  `gh-pages` unter Settings → Pages (durch Kevin). Seitdem liefert GitHub wieder aus; live ist die Version mit automatischem Rezept-Eingang.
+- **Falls es wieder hängt:** Settings → Pages → „⋯“ → Unpublish site → danach Source „Deploy from a branch“ → `gh-pages` → `/ (root)` → Save,
+  dann den fehlgeschlagenen Lauf „pages build and deployment“ erneut ausführen.
+- **Dauerhaft besser (empfohlen):** Auf `actions/upload-pages-artifact` + `actions/deploy-pages` umstellen (Settings → Pages → Source:
+  **GitHub Actions**), mit `concurrency: { group: pages, cancel-in-progress: false }`; der Zweig `gh-pages` entfällt.
+- **Wichtig:** Der Workflow veröffentlicht nur, wenn `npm test` grün ist. Ein roter Test (z. B. wegen CRLF, siehe Abschnitt 13) blockiert die
+  Veröffentlichung stillschweigend; die Seite bleibt dann auf dem alten Stand. Nach jedem Push den Lauf unter Actions prüfen.
+- Live prüfen: `curl -s https://kvnstl924.github.io/Notiz-App/ | grep -o 'assets/index-[^"]*\.js'`, dann in dieser Datei nach einem neuen Text suchen.
 
 ## 12. Offene Aufgaben (Reihenfolge nach Nutzen)
 
-1. **Auslieferung reparieren** (Abschnitt 11) und danach auf **echten Geräten** testen (Kevin: Samsung/Chrome; Isabelle: iPhone/Safari).
+1. Auf **echten Geräten** testen (Kevin: Samsung/Chrome; Isabelle: iPhone/Safari).
    Besonders prüfen:
    - iOS-Standalone: Statusleiste (`black-translucent`), Safe Areas (`env(safe-area-inset-*)`), Tastatur verdeckt Eingabefelder nicht,
      Textfeld-Zoom (Felder sind ≥ 16 px), Rubber-Band-Scrollen, Wisch-zurück vom Rand (kann mit der Systemgeste kollidieren).
@@ -242,8 +243,9 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
      (nicht umgesetzt, **Annahme ungetestet**).
    - Glas-Optik in Safari (`-webkit-backdrop-filter`), Inter vs. SF, Dunkel/Hell.
    - Sync über zwei echte Geräte, Offline-Betrieb, Neuaufbau nach langer Pause.
-2. **Rezept-Eingang mit der echten Tabelle** abnehmen (Kevin muss freigeben, siehe 8). Tatsächliches gviz-CSV prüfen (Kopfzeile,
-   Zeilenumbrüche in Zellen, Zellen, die mit `=`, `+`, `-` beginnen). Die Test-Zeile in der Tabelle entfernen.
+2. **Rezept-Eingang auf echten Handys** abnehmen (läuft mit der echten Tabelle, siehe Abschnitt 8). Zu klären: Abruf **alle 5 Sekunden** solange die App
+   sichtbar ist (Wunsch von Kevin) belastet Akku/Datenvolumen und die Google-Abfrage; ggf. auf 15–30 s erhöhen oder nach Inaktivität drosseln. Zellen, die
+   mit `=`, `+`, `-` beginnen, sind bisher unproblematisch (Rezepte beginnen mit `---`). Die Test-Zeile aus der Tabelle entfernen lassen.
 3. **Browser-Tests ins Repo holen.** Die bisherigen Playwright-Prüfungen lagen nur in `/tmp` und sind veraltet (z. B. öffnet das Plus
    jetzt ein Menü statt direkt ein Rezept anzulegen). Empfehlung: `@playwright/test` mit Emulator, Handy-Viewport (390×844, `isMobile`, `hasTouch`),
    Szenarien: Rezept anlegen/Lesemodus/Speichern; Einkaufsliste inkl. Zuhause/Gekauft; zwei Browser-Kontexte (Kevin/Isabelle) mit Live-Sync und
@@ -282,6 +284,12 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 - `history`/`localStorage` können in eingebetteten Rahmen fehlen → überall `try/catch` bzw. Arbeitsspeicher-Rückfall (`store.ts`, `manager.ts`).
 - Playwright kann `context.setOffline` nicht zuverlässig mit Service Workern → Server beenden statt offline schalten.
 - Das Textfeld-Verhalten `Enter` = neuer Eintrag, `Backspace` im leeren Feld = Eintrag löschen ist gewollt (Checklisten, Schritte).
+
+- **Zeilenenden:** Dateien müssen **LF** haben (`.gitattributes: * text=auto eol=lf`). Ein Werkzeug auf Windows hat einmal sechs Dateien auf CRLF
+  umgestellt; dadurch fand `src/import-guide.test.ts` die Textstellen in `docs/REZEPT-IMPORT.md` nicht mehr, der Test schlug fehl und
+  **die Veröffentlichung wurde stillschweigend blockiert**. Der Test ist jetzt tolerant (`lf()`), trotzdem LF behalten.
+- Mehrfach hintereinander gepushte Commits brechen laufende Läufe ab (`concurrency: cancel-in-progress`): Nur der letzte Lauf zählt.
+  Bleibt der letzte rot, ist **nichts** veröffentlicht, auch wenn frühere Läufe grün waren.
 
 ## 14. Definition of Done (für jede Änderung)
 
