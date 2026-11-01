@@ -103,11 +103,6 @@ export function parseAmount(text: string): ParsedAmount {
   return { numText, qty: Number.isFinite(qty) ? qty : null, unit: unitId };
 }
 
-/** Zelle aus Zahl und Einheit zusammensetzen („500“ + „g“ -> „500 g“). */
-export function joinAmount(num: string, unit: string): string {
-  return [num.trim(), unit].filter(Boolean).join(' ');
-}
-
 export interface Grams {
   grams: number;
   /** nachvollziehbare Rechnung, z. B. „2 TL = 10 ml × 1,2 g/ml“ */
@@ -136,10 +131,13 @@ export function toGrams(amount: string, ingredient: string): Grams | null {
   return null;
 }
 
-/** Anzeige in der Einkaufsliste: Gewicht bleibt, umrechenbares Volumen wird in Gramm gezeigt. */
+/**
+ * Anzeige einer Menge (Zutatenliste, Lesemodus und Einkaufsliste): in Gramm, die Angabe aus dem Rezept
+ * in Klammern dahinter. Schon Gramm bleibt unverändert, was sich nicht umrechnen lässt, auch.
+ */
 export function shopAmount(amount: string, ingredient: string): string {
   const p = parseAmount(amount);
-  if (!p.unit || unitOf(p.unit).kind !== 'volume') return amount;
+  if (!p.unit || p.unit === 'g') return amount;
   const g = toGrams(amount, ingredient);
   return g ? `${fmt(g.grams, g.grams >= 10 ? 0 : 1)} g (${amount})` : amount;
 }

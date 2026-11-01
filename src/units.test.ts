@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { densityOf, joinAmount, nameColumn, parseAmount, shopAmount, toGrams } from './units';
+import { densityOf, nameColumn, parseAmount, shopAmount, toGrams } from './units';
 
 describe('Mengen lesen', () => {
   it('Zahl und Einheit werden getrennt', () => {
@@ -13,10 +13,6 @@ describe('Mengen lesen', () => {
   it('ohne Zahl bleibt der Text, ohne Einheit bleibt sie leer', () => {
     expect(parseAmount('nach Geschmack')).toMatchObject({ qty: null, unit: '' });
     expect(parseAmount('4')).toMatchObject({ qty: 4, unit: '' });
-  });
-  it('joinAmount setzt zusammen', () => {
-    expect(joinAmount('500', 'g')).toBe('500 g');
-    expect(joinAmount('2', '')).toBe('2');
   });
 });
 
@@ -41,6 +37,7 @@ describe('Umrechnung in Gramm (feste Formel)', () => {
   it('shopAmount zeigt Gramm und die ursprüngliche Angabe', () => {
     expect(shopAmount('2 TL', 'Salz')).toBe('12 g (2 TL)');
     expect(shopAmount('500 g', 'Mehl')).toBe('500 g');
+    expect(shopAmount('0,5 kg', 'Mehl')).toBe('500 g (0,5 kg)');
     expect(shopAmount('1 Stück', 'Ei')).toBe('1 Stück');
   });
   it('Namensspalte wird erkannt', () => {

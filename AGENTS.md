@@ -302,10 +302,10 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 ## 15. Nachtrag: Änderungen nach der ersten Übergabe (Stand 01.11.2026, abends)
 
 - **Mengen und Umrechnung** (`src/units.ts`, Tests `units.test.ts`): Die Spalte „Menge“ enthält Zahl **und** Einheit
-  (`500 g`, `2 TL`). Im Editor gibt es dafür ein Zahlfeld plus Einheiten-Auswahl (`QtyCell` in `src/screens.tsx`).
+  (`500 g`, `2 TL`). Im Editor ist die Menge ein Freitextfeld („2 TL“, „500 g“), ohne Einheiten-Auswahl.
   Umrechnung: Gewicht exakt; Volumen fest (TL = 5 ml, EL = 15 ml, Tasse = 250 ml) × Dichte der Zutat (`DENSITY`,
   Richtwerte: Salz, Zucker, Mehl, Butter, Öl, Honig, Milch, Wasser, Sahne, Reis). Ohne Dichte keine Umrechnung.
-  Lesemodus zeigt „≈ 12 g“ (`QtyHint`), Einkaufsliste „12 g (2 TL)“ (`shopAmount`).
+  Zutatenliste (Lesemodus) und Einkaufsliste zeigen „12 g (2 TL)“: Gramm zuerst, die Angabe aus dem Rezept in Klammern (`shopAmount`). Gramm bleibt ohne Klammern, Kilo und Volumen werden umgerechnet, Stück und Unbekanntes bleiben wie geschrieben.
 - **Altes Format migriert** (`src/migrate.ts`): `Menge | Einheit | Zutat` wird beim Laden, Importieren und Übernehmen
   vom Sync zu `Menge | Zutat`. Die Anleitung `docs/REZEPT-IMPORT.md` beschreibt das neue Format.
 - **Papierkorb** (`src/trash.ts`, `src/trash-ui.tsx`): Gelöschte Rezepte und Notizen bleiben 30 Tage (lokal in

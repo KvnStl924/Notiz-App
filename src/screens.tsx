@@ -33,7 +33,7 @@ import { InboxPanel } from './inbox-ui';
 import { TrashPanel } from './trash-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
-import { joinAmount, nameColumn, parseAmount, toGrams, UNITS, fmt } from './units';
+import { nameColumn, shopAmount } from './units';
 
 export type Tab = NoteType | 'shopping';
 export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notizen', shopping: 'Einkauf' };
@@ -761,17 +761,14 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
               {r.map((cell, c) => (
                 <div key={`c${ri}-${c}`}>
                   {isQty(c) ? (
-                    <>
-                      <QtyCell
-                        value={cell}
-                        ro={ro}
-                        onChange={(v) => {
-                          r[c] = v;
-                          update();
-                        }}
-                      />
-                      {ro && <QtyHint amount={cell} ingredient={r[nameCol] ?? ''} />}
-                    </>
+                    <AutoText
+                      value={ro ? shopAmount(cell, r[nameCol] ?? '') : cell}
+                      placeholder="z. B. 2 TL"
+                      onInput={(v) => {
+                        r[c] = v;
+                        update();
+                      }}
+                    />
                   ) : (
                     <AutoText
                       value={cell}
@@ -839,40 +836,3 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
   );
 }
 
-/** Menge: Zahl und Einheit in einer Zelle. Im Bearbeiten-Modus wählt man die Einheit aus der Liste. */
-function QtyCell(props: { value: string; ro: boolean; onChange: (v: string) => void }) {
-  const p = parseAmount(props.value);
-  // Ohne Zahl steht der ganze Text im Zahlfeld, dann gibt es keine Einheit
-  const unit = p.qty === null ? '' : p.unit;
-  return (
-    <div class="qty">
-      <input
-        class="qty-num"
-        inputmode="decimal"
-        value={p.qty === null ? props.value : p.numText}
-        readOnly={props.ro}
-        placeholder="Menge"
-        onInput={(e) => props.onChange(joinAmount((e.target as HTMLInputElement).value, unit))}
-      />
-      <select
-        class="qty-unit"
-        value={unit}
-        disabled={props.ro}
-        onChange={(e) => props.onChange(joinAmount(p.qty === null ? props.value : p.numText, (e.target as HTMLSelectElement).value))}
-      >
-        {UNITS.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-/** Lesemodus: umgerechnete Gramm unter der Menge, nur wenn es exakt geht. */
-function QtyHint(props: { amount: string; ingredient: string }) {
-  const g = toGrams(props.amount, props.ingredient);
-  if (!g) return null;
-  return <div class="qty-hint">≈ {fmt(g.grams, g.grams >= 10 ? 0 : 1)} g</div>;
-}
