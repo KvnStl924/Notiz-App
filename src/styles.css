@@ -101,6 +101,8 @@ body {
   content: '';
   position: absolute;
   inset: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent 64px, #000 150px);
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 64px, #000 150px);
   background: radial-gradient(60% 40% at 8% 6%, var(--blob-1), transparent 70%),
     radial-gradient(55% 40% at 100% 42%, var(--blob-3), transparent 70%),
     radial-gradient(60% 40% at 0% 100%, var(--blob-2), transparent 70%);
@@ -182,6 +184,8 @@ svg {
   box-shadow: -8px 0 30px rgba(0, 0, 0, 0.18);
 }
 .screen.top::before {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent 64px, #000 150px);
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 64px, #000 150px);
   content: '';
   position: absolute;
   inset: 0;
@@ -1208,4 +1212,10 @@ svg {
 .toast.update {
   bottom: calc(var(--safe-bottom) + 92px);
   z-index: 130;
+}
+
+/* Knöpfe oben: kürzerer Schatten, damit er nicht bis an den oberen Bildschirmrand (Statusleiste) reicht */
+.navbar .glass,
+.sync-btn.glass {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
 }

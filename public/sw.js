@@ -1,7 +1,7 @@
 // Service Worker: macht die App offline nutzbar.
 // Strategie "Netz zuerst": ist Internet da, kommt immer die neueste Version.
 // Ohne Internet wird die zuletzt geladene Version aus dem Cache gestartet.
-const CACHE = 'notiz-v5';
+const CACHE = 'notiz-v6';
 
 // Beim Installieren die App-Dateien vorladen (Startseite, Programm, Design, Schrift, Icons),
 // damit die App auch beim allerersten Mal ohne Netz startet.
