@@ -438,7 +438,21 @@ export class SyncEngine {
       const local = this.shop.get(c.id);
       const rev = (d.rev as number) ?? 0;
       if (local && (local.rev ?? 0) >= rev) continue; // eigener Stand ist gleich oder neuer
-      if (local && (this.shopActive.get(c.id) ?? 0) > Date.now()) continue; // gerade in Arbeit
+      const activeUntil = this.shopActive.get(c.id) ?? 0;
+      if (local && activeUntil > Date.now()) {
+        // gerade in Arbeit: danach noch einmal prüfen, sonst ginge die fremde Änderung verloren
+        const key = 'shop:' + c.id;
+        clearTimeout(this.deferTimers.get(key));
+        this.deferTimers.set(
+          key,
+          setTimeout(() => {
+            this.deferTimers.delete(key);
+            const latest = this.shopDocs.get(c.id);
+            if (latest && !this.stopped) this.onShop([{ id: c.id, data: latest }]);
+          }, activeUntil - Date.now() + 50),
+        );
+        continue;
+      }
       if (d.deleted) {
         if (local) this.shop.removeRemote(c.id);
       } else {
