@@ -11,7 +11,7 @@ import { sync } from './sync/manager';
  */
 
 const KEY = 'notiz.inbox.v1';
-const POLL_MS = 5 * 60_000;
+const POLL_MS = 5_000;
 
 interface Saved {
   sheetId: string;
@@ -106,6 +106,7 @@ class Inbox {
   notice: { id: string; title: string } | null = null;
   private listeners = new Set<() => void>();
   private running = false;
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
 
   subscribe(fn: () => void) {
     this.listeners.add(fn);
@@ -133,9 +134,30 @@ class Inbox {
     this.status = this.saved ? 'idle' : 'off';
     this.notify();
     if (typeof document === 'undefined') return;
-    setTimeout(() => void this.check(), 4000);
-    setInterval(() => void this.check(), POLL_MS);
-    document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && void this.check());
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+    if (document.visibilityState === 'visible') void this.check();
+    this.schedulePoll();
+  }
+
+  private onVisibilityChange = () => {
+    if (document.visibilityState !== 'visible') {
+      if (this.pollTimer) clearTimeout(this.pollTimer);
+      this.pollTimer = null;
+      return;
+    }
+    void this.check().finally(() => this.schedulePoll());
+  };
+
+  /** Poll only while the app is visible; resume with an immediate check. */
+  private schedulePoll() {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+    this.pollTimer = null;
+    if (!this.saved || typeof document === 'undefined' || document.visibilityState !== 'visible') return;
+    this.pollTimer = setTimeout(() => {
+      this.pollTimer = null;
+      void this.check().finally(() => this.schedulePoll());
+    }, POLL_MS);
   }
 
   /** Tabelle verbinden und gleich prüfen. Gibt eine Fehlermeldung zurück, wenn es nicht klappt. */
@@ -147,6 +169,7 @@ class Inbox {
     this.status = 'idle';
     this.notify();
     await this.check(true);
+    this.schedulePoll();
     if ((this.status as InboxStatus) === 'error') {
       const msg = this.error;
       this.saved = null;
@@ -174,6 +197,7 @@ class Inbox {
   /** Neue Zeilen der Tabelle als Rezepte übernehmen. */
   async check(force = false) {
     if (!this.saved || this.running) return;
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
     // Ist ein gemeinsamer Bereich eingerichtet, erst nach dem ersten Abgleich importieren,
     // sonst legen beide Handys dasselbe Rezept an.
     if (!force && sync.saved && sync.view !== 'online') return;
