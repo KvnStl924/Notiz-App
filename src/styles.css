@@ -77,16 +77,9 @@ body {
   -webkit-user-select: none;
 }
 #app {
+  /* Auf dem Handy der ganze Bildschirm, über alle Ränder (iPhone: auch unter Ecken und Home-Leiste) */
   position: fixed;
-  top: 0;
-  bottom: 0;
-  /* Ganze sichtbare Höhe (auch wenn Safari-Leisten ein- und ausgeblendet werden) */
-  height: 100vh;
-  height: 100dvh;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: min(100%, 430px);
+  inset: 0;
   overflow: hidden;
   background: var(--bg);
 }
@@ -96,6 +89,10 @@ body {
     background: color-mix(in srgb, var(--bg) 85%, gray);
   }
   #app {
+    width: 430px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     box-shadow: 0 0 0 1px var(--separator), 0 24px 80px rgba(0, 0, 0, 0.35);
   }
 }
