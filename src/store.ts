@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { type Note, type ShopItem, newId } from './model';
 import { demoNotes } from './demo';
 import { mergeRecipe } from './shopping';
+import { trash } from './trash';
 
 /** localStorage kann fehlen oder Fehler werfen (z. B. im eingebetteten Vorschau-Rahmen): dann nur im Arbeitsspeicher. */
 const mem = new Map<string, string>();
@@ -75,7 +76,16 @@ export class NoteStore extends Collection<Note> {
     this.persist();
     this.hooks.forEach((h) => h.saved(note));
   }
+  /** Löschen: die Notiz wandert in den Papierkorb (30 Tage wiederherstellbar). */
   remove(id: string) {
+    const note = this.items.get(id);
+    this.items.delete(id);
+    this.persist();
+    if (note) trash.add(note);
+    this.hooks.forEach((h) => h.removed(id));
+  }
+  /** Sofort verwerfen, ohne Papierkorb (z. B. leere Entwürfe). */
+  discard(id: string) {
     this.items.delete(id);
     this.persist();
     this.hooks.forEach((h) => h.removed(id));
@@ -86,7 +96,11 @@ export class NoteStore extends Collection<Note> {
     this.persist();
   }
   removeRemote(id: string) {
-    if (this.items.delete(id)) this.persist();
+    const note = this.items.get(id);
+    if (this.items.delete(id)) {
+      this.persist();
+      if (note) trash.add(note);
+    }
   }
 }
 

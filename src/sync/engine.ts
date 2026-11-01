@@ -489,6 +489,18 @@ export class SyncEngine {
     this.notify();
   }
 
+  /**
+   * Vergisst, welche Blöcke schon gesendet wurden (nach dem Wiederherstellen aus dem Papierkorb),
+   * damit sie beim nächsten Speichern wieder an den Server gehen.
+   */
+  forgetBlocks(blockIds: string[]) {
+    for (const id of blockIds) {
+      this.sentJson.delete(id);
+      this.knownRev.delete(id);
+      this.blocks.delete(id);
+    }
+  }
+
   /** Kennt der gemeinsame Bereich diese Notiz schon (auch wenn sie inzwischen gelöscht wurde)? */
   knows(noteId: string): boolean {
     return this.metas.has(noteId);

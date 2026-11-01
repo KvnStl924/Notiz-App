@@ -41,6 +41,15 @@ export function App() {
   const edRef = useRef<HTMLDivElement>(null);
   const closing = useRef(false);
   const tabRef = useRef(tab);
+  // Richtung des letzten Tabwechsels (für die Wischanimation); 0 = beim Start nur einblenden
+  const slideDir = useRef<0 | 1 | -1>(0);
+  const swipe = useRef<{ x: number; y: number; ok: boolean } | null>(null);
+  const TABS: Tab[] = ['recipe', 'note', 'shopping'];
+  const changeTab = (t: Tab) => {
+    const from = TABS.indexOf(tabRef.current);
+    slideDir.current = TABS.indexOf(t) > from ? 1 : -1;
+    setTab(t);
+  };
   tabRef.current = tab;
 
   /** p = 0: Editor draußen, p = 1: Editor ganz offen. */
@@ -133,8 +142,39 @@ export function App() {
 
   return (
     <>
-      <div class="screen" ref={rootRef}>
-        <div key={tab} style={{ display: 'contents', animation: 'fade-in .25s var(--ease)' }}>
+      <div
+        class="screen"
+        ref={rootRef}
+        onPointerDown={(e) => {
+          // Wischen zwischen Tabs nur auf freien Flächen: nicht auf Zeilen, Felder, Tabellen, Leisten
+          const ok = !(e.target as HTMLElement).closest(
+            'textarea, input, .row-wrap, .shop-wrap, .tbl, .table-scroll, .li, .card, .tabbar, .panel, .sheet, .menu, .sync-btn',
+          );
+          swipe.current = { x: e.clientX, y: e.clientY, ok };
+        }}
+        onPointerUp={(e) => {
+          const s = swipe.current;
+          swipe.current = null;
+          if (!s || !s.ok) return;
+          const dx = e.clientX - s.x;
+          const dy = e.clientY - s.y;
+          if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+          const i = TABS.indexOf(tabRef.current);
+          if (dx < 0 && i < TABS.length - 1) changeTab(TABS[i + 1]);
+          if (dx > 0 && i > 0) changeTab(TABS[i - 1]);
+        }}
+        onPointerCancel={() => (swipe.current = null)}
+      >
+        <div
+          key={tab}
+          class="tab-page"
+          style={{
+            animation:
+              slideDir.current === 0
+                ? 'fade-in .25s var(--ease)'
+                : `${slideDir.current > 0 ? 'tab-in-r' : 'tab-in-l'} .34s var(--ease)`,
+          }}
+        >
           {tab === 'shopping' ? (
             <ShopScreen />
           ) : (

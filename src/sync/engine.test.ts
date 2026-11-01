@@ -172,6 +172,24 @@ describe('Live-Sync', () => {
     expect(final(a)).toBe('Isabelle tippt'); // die jüngere Änderung
   });
 
+  it('wiederhergestellte Notiz kommt mit allen Blöcken zurück', async () => {
+    const s = new MemoryServer();
+    const a = await device(s, 'Kevin');
+    const b = await device(s, 'Isabelle');
+    const note = mk.note({ title: 'Papierkorb', blocks: [mk.text('eins'), mk.text('zwei')] });
+    a.notes.save(note);
+    await settle();
+    const copy = a.notes.get(note.id)!;
+    a.notes.remove(note.id); // in den Papierkorb
+    await settle();
+    expect(b.notes.get(note.id)).toBeUndefined();
+
+    a.engine.forgetBlocks(copy.blocks.map((x) => x.id)); // Wiederherstellen
+    a.notes.save(copy);
+    await settle();
+    expect(b.notes.get(note.id)?.blocks.map((x) => (x as { text: string }).text)).toEqual(['eins', 'zwei']);
+  });
+
   it('Anwesenheit: man sieht, wer in welchem Block ist', async () => {
     const s = new MemoryServer();
     const a = await device(s, 'Kevin');

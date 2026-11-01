@@ -30,6 +30,7 @@ import { shop, store, useNote, useNotes } from './store';
 import { sync, usePresence } from './sync/manager';
 import { ImportPanel } from './import-ui';
 import { InboxPanel } from './inbox-ui';
+import { TrashPanel } from './trash-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 
@@ -80,6 +81,7 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
   const all = useNotes();
   const [q, setQ] = useState('');
   const { scrolled, onScroll } = useScrolled();
@@ -115,6 +117,7 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
                 ...(props.type === 'recipe'
                   ? [{ label: 'Rezept-Eingang', icon: <Inbox size={20} />, onSelect: () => setInboxOpen(true) }]
                   : []),
+                { label: 'Papierkorb', icon: <Trash2 size={20} />, separatorBefore: true, onSelect: () => setTrashOpen(true) },
               ],
             })
           }
@@ -168,6 +171,7 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
 
       {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
       {inboxOpen && <InboxPanel onClose={() => setInboxOpen(false)} />}
+      {trashOpen && <TrashPanel onClose={() => setTrashOpen(false)} />}
       {importOpen && (
         <ImportPanel
           type={props.type}
@@ -276,7 +280,7 @@ export function EditorScreen(props: {
   const readOnly = note.type === 'recipe' && !editing;
 
   const back = () => {
-    if (isEmptyNote(note)) store.remove(note.id);
+    if (isEmptyNote(note)) store.discard(note.id);
     else if (note.type === 'recipe') tidy(note), store.save(note);
     props.onBack();
   };
