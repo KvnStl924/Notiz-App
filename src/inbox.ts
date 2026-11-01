@@ -4,14 +4,11 @@ import type { Note } from './model';
 import { store } from './store';
 import { sync } from './sync/manager';
 
-/**
- * Rezept-Eingang: Claude trägt Rezepte in eine Google-Tabelle ein (Spalten: Zeit, Titel, Rezept),
- * die App holt sie dort ab. Die Tabelle muss auf „Jeder mit dem Link: Betrachter“ stehen,
- * dann darf die App sie lesen. Geschrieben wird nur von Claude über Kevins Google-Konto.
- */
+/** Rezept-Eingang aus der gemeinsamen, öffentlich lesbaren Google-Tabelle. */
 
 const KEY = 'notiz.inbox.v1';
 const POLL_MS = 5_000;
+const DEFAULT_SHEET_ID = '1cGwVzjOz1QfMTnONgrWyFYucLpNwrzvHkaMNtPJ3rcE';
 
 interface Saved {
   sheetId: string;
@@ -130,6 +127,10 @@ class Inbox {
       if (raw) this.saved = JSON.parse(raw) as Saved;
     } catch {
       /* ignorieren */
+    }
+    if (!this.saved) {
+      this.saved = { sheetId: DEFAULT_SHEET_ID, imported: [] };
+      this.persist();
     }
     this.status = this.saved ? 'idle' : 'off';
     this.notify();
