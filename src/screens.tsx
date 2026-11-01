@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CircleMinus,
   ClipboardPaste,
+  Inbox,
   Copy,
   Ellipsis,
   FileText,
@@ -28,6 +29,7 @@ import { writeMarkdown } from './markdown';
 import { shop, store, useNote, useNotes } from './store';
 import { sync, usePresence } from './sync/manager';
 import { ImportPanel } from './import-ui';
+import { InboxPanel } from './inbox-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 
@@ -77,6 +79,7 @@ function subtitle(n: Note): string {
 export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void; onNew: () => void }) {
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
   const all = useNotes();
   const [q, setQ] = useState('');
   const { scrolled, onScroll } = useScrolled();
@@ -109,6 +112,9 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
                   icon: <ClipboardPaste size={20} />,
                   onSelect: () => setImportOpen(true),
                 },
+                ...(props.type === 'recipe'
+                  ? [{ label: 'Rezept-Eingang (Claude)', icon: <Inbox size={20} />, onSelect: () => setInboxOpen(true) }]
+                  : []),
               ],
             })
           }
@@ -161,6 +167,7 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
       </div>
 
       {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
+      {inboxOpen && <InboxPanel onClose={() => setInboxOpen(false)} />}
       {importOpen && (
         <ImportPanel
           type={props.type}

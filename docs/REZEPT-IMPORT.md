@@ -14,7 +14,7 @@ und du es in seine Notiz-App bringen sollst. Lies sie ganz, bevor du anfängst.
 ## Dein Ablauf
 1. Rezept besorgen: Link abrufen, Text lesen oder Foto auswerten (siehe „Rezept von einem Link“).
 2. Rezept **im Format der App** schreiben (siehe „Das Format“).
-3. In die App bringen: **Weg A** (immer möglich) oder **Weg B** (nur mit Programmausführung und Internet).
+3. In die App bringen: **Weg 1** (Google-Tabelle, empfohlen), sonst **Weg 2** (Text zum Einfügen). **Weg 3** nur mit Programmausführung und Internet.
 4. Kevin kurz bestätigen, was angelegt wurde, in zwei Sätzen.
 
 Nachfragen nur, wenn wirklich etwas fehlt (z. B. Portionen unklar). Nichts erfinden.
@@ -74,12 +74,36 @@ und kürzer. Keine Einleitungen, Geschichten oder Fließtexte der Seite kopieren
 - Lässt sich die Seite nicht lesen (Bezahlschranke, Fehler), sag das kurz und bitte Kevin, den Rezepttext einzufügen. Rate nicht.
 - Bei einem Foto oder Screenshot: nur übernehmen, was du sicher lesen kannst, bei Unsicherheit nachfragen.
 
-## Weg A: Text zum Einfügen (funktioniert immer, auch auf dem Handy)
+## Weg 1: Google-Tabelle „Notiz-App Rezept-Eingang“ (empfohlen)
+Voraussetzung: In diesem Chat ist Kevins Google Drive bzw. Google Tabellen verbunden.
+Die App liest diese Tabelle alle paar Minuten und beim Öffnen und legt jede **neue Zeile** als **neues Rezept** an
+(auf beiden Handys, per Live-Sync). Du musst danach nichts weiter tun.
+
+1. **Tabelle finden:** Drive-Suche nach dem Titel `Notiz-App Rezept-Eingang` (liegt in Kevins eigenem Drive).
+   Finde sie nicht oder kannst du nicht suchen: Kevin um den Tabellen-Link bitten (die ID steht im Link nach `/d/`).
+2. **Namen des Tabellenblatts** mit `get_spreadsheet` nachsehen. Er heißt oft `Untitled`, `Tabelle1` oder `Sheet1`.
+3. **Genau eine Zeile anhängen** (`append_values`, Bereich `<Blattname>!A1`) mit drei Zellen:
+   Zeit, Titel und das **komplette Rezept als Markdown** (Kopf `---`, `# Titel`, Zutaten-Tabelle, Schritte), Zeilenumbrüche als `\n`.
+
+```json
+[["2026-11-01 18:30", "Spaghetti Carbonara", "---\ntyp: rezept\nportionen: 4\n---\n# Spaghetti Carbonara\n\n## Zutaten\n| Menge | Einheit | Zutat |\n|---|---|---|\n| 400 | g | Spaghetti |\n| 150 | g | Guanciale |\n\n## Zubereitung\n1. Spaghetti kochen.\n2. Guanciale braten und alles mischen.\n"]]
+```
+
+4. **Nie ändern:** die Kopfzeile (`Zeit | Titel | Rezept`) und bestehende Zeilen. Nichts löschen.
+   Eine Änderung ist eine **neue Zeile** (= neues Rezept); Kevin löscht das alte in der App.
+5. **Kevin sagen:** „Das Rezept ist in der Tabelle. Es erscheint in der App innerhalb weniger Minuten, sofort,
+   wenn du Rezepte → Plus → *Rezept-Eingang (Claude)* → *Jetzt prüfen* tippst.“
+
+Einmalig muss **Kevin** (nicht du) in der App verbinden: Tabelle in Google Drive teilen mit „Jeder mit dem Link: Betrachter“
+und den Link in der App unter Rezepte → Plus → *Rezept-Eingang (Claude)* einfügen. Kommt nichts an, frage zuerst,
+ob das erledigt ist. Die App kann in der Tabelle nichts ändern (nur lesen).
+
+## Weg 2: Text zum Einfügen (funktioniert immer, auch auf dem Handy)
 1. Gib das fertige Rezept in **genau einem Codeblock** aus (so kann Kevin es mit einem Fingertipp kopieren).
 2. Schreibe darunter: *„In der App: Rezepte → Plus oben rechts → ‚Aus Text einfügen‘ → einfügen → ‚Importieren‘.“*
 3. Die App legt immer ein **neues** Rezept an und überschreibt nichts.
 
-## Weg B: Direkt in die App schreiben (nur wenn du Programme ausführen und ins Internet kannst)
+## Weg 3: Direkt in die App schreiben (nur wenn du Programme ausführen und ins Internet kannst)
 Das Rezept erscheint dann ohne weiteren Schritt in wenigen Sekunden auf beiden Handys.
 
 1. Bitte Kevin um den **Einladungslink** seines gemeinsamen Bereichs (App → Personen-Symbol oben links →
@@ -93,7 +117,7 @@ Das Rezept erscheint dann ohne weiteren Schritt in wenigen Sekunden auf beiden H
 4. Dann **senden**: derselbe Befehl ohne `--nur-pruefen`. Bei Erfolg steht dort „Fertig. … ist jetzt in der App“.
 5. Mögliche Fehler:
    - `403`: Link oder Code ist falsch oder unvollständig. Kevin bitten, ihn erneut zu kopieren.
-   - Verbindungsfehler oder Zeitüberschreitung: Dein Chat darf vermutlich nicht ins Internet. Nimm **Weg A**.
+   - Verbindungsfehler oder Zeitüberschreitung: Dein Chat darf vermutlich nicht ins Internet. Nimm **Weg 1** oder **Weg 2**.
 6. Das Programm legt **nur neue** Rezepte an. Es ändert oder löscht nie etwas Vorhandenes.
    Zum Ändern eines Rezepts: neues Rezept anlegen und Kevin sagen, dass er das alte löschen kann.
 

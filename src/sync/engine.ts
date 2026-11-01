@@ -489,6 +489,11 @@ export class SyncEngine {
     this.notify();
   }
 
+  /** Kennt der gemeinsame Bereich diese Notiz schon (auch wenn sie inzwischen gelöscht wurde)? */
+  knows(noteId: string): boolean {
+    return this.metas.has(noteId);
+  }
+
   /** Andere Personen, die gerade in dieser Notiz sind (frisch gemeldet). */
   othersIn(noteId: string): Presence[] {
     const now = Date.now();

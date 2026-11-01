@@ -5,6 +5,7 @@ import { createNote, EditorScreen, ListScreen, TAB_TITLE, type Tab } from './scr
 import { ShopScreen } from './shop-screen';
 import { SyncButton, SyncPanel } from './sync-ui';
 import { useShopping } from './store';
+import { useInbox } from './inbox';
 import { Toast } from './ui';
 import { useUpdateAvailable } from './update';
 
@@ -31,6 +32,7 @@ const hostWidth = () => document.getElementById('app')!.clientWidth;
 export function App() {
   const [tab, setTab] = useState<Tab>('recipe');
   const updateReady = useUpdateAvailable();
+  const inboxState = useInbox();
   const openShopping = useShopping().filter((i) => !isDone(i)).length;
   const [open, setOpen] = useState<Open | null>(null);
 
@@ -163,6 +165,20 @@ export function App() {
 
       <div class="dim" ref={dimRef} />
       <SyncPanel />
+      {inboxState.notice && (
+        <Toast
+          text={`Neues Rezept von Claude: ${inboxState.notice.title}`}
+          action={{
+            label: 'Ansehen',
+            run: () => {
+              const id = inboxState.notice!.id;
+              inboxState.clearNotice();
+              setTab('recipe');
+              openNote(id);
+            },
+          }}
+        />
+      )}
       {updateReady && <Toast class="update" text="Neue Version verfügbar" action={{ label: 'Aktualisieren', run: () => location.reload() }} />}
 
       {open && (

@@ -27,6 +27,9 @@ Ablauf: `VITE_DEMO=1 npx vite build --outDir /tmp/demo-dist`, alles in eine HTML
   automatisch gebaut, getestet und veröffentlicht: `.github/workflows/veroeffentlichen.yml`).
 - Firebase-Projekt `notiz-app-98dd6` (Firestore, Regeln in `firestore.rules`), kein Login; Zugriff über den
   Bereichs-Code im Einladungslink.
+- Rezept-Eingang: Google-Tabelle „Notiz-App Rezept-Eingang“ in Kevins Drive (Spalten Zeit, Titel, Rezept); Claude hängt Zeilen an,
+  die App liest sie über `docs.google.com/.../gviz/tq?tqx=out:csv` (Tabelle muss „Jeder mit dem Link: Betrachter“ sein) und legt neue Rezepte an
+  (`src/inbox.ts`). Die Tabellen-ID gehört nicht in dieses öffentliche Projekt.
 - Rezept-Import aus anderen Chats: `docs/REZEPT-IMPORT.md` (Anleitung) und `tools/rezept-senden.py`.
   Die Anleitung enthält das Programm als Kopie; `src/import-guide.test.ts` prüft, dass beides übereinstimmt.
 - Offen: Drive-Anbindung, Bilder, Formatierung; Test auf echten Handys.
