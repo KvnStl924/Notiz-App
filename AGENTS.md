@@ -298,3 +298,37 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 3. Nichts Hartcodiertes mit Geheimnissen; alle Pfade relativ; neue Firestore-Sammlungen **zusätzlich** in `firestore.rules` **und** bei Kevin eintragen lassen.
 4. Dokumentation anpassen (`README.md` Stand-Liste, `docs/KONZEPT.md`, diese Datei, bei Format-Änderungen `docs/REZEPT-IMPORT.md` samt Programm-Kopie).
 5. Kevin knapp auf Deutsch berichten: was geändert ist, **was getestet wurde und was nicht**, und ob er etwas tun muss (am Handy machbar!).
+
+## 15. Nachtrag: Änderungen nach der ersten Übergabe (Stand 01.11.2026, abends)
+
+- **Mengen und Umrechnung** (`src/units.ts`, Tests `units.test.ts`): Die Spalte „Menge“ enthält Zahl **und** Einheit
+  (`500 g`, `2 TL`). Im Editor gibt es dafür ein Zahlfeld plus Einheiten-Auswahl (`QtyCell` in `src/screens.tsx`).
+  Umrechnung: Gewicht exakt; Volumen fest (TL = 5 ml, EL = 15 ml, Tasse = 250 ml) × Dichte der Zutat (`DENSITY`,
+  Richtwerte: Salz, Zucker, Mehl, Butter, Öl, Honig, Milch, Wasser, Sahne, Reis). Ohne Dichte keine Umrechnung.
+  Lesemodus zeigt „≈ 12 g“ (`QtyHint`), Einkaufsliste „12 g (2 TL)“ (`shopAmount`).
+- **Altes Format migriert** (`src/migrate.ts`): `Menge | Einheit | Zutat` wird beim Laden, Importieren und Übernehmen
+  vom Sync zu `Menge | Zutat`. Die Anleitung `docs/REZEPT-IMPORT.md` beschreibt das neue Format.
+- **Papierkorb** (`src/trash.ts`, `src/trash-ui.tsx`): Gelöschte Rezepte und Notizen bleiben 30 Tage (lokal in
+  `notiz.trash.v1`), danach automatisch weg (beim Öffnen geprüft). Löschen über `store.remove` (auch bei Sync-Löschungen
+  vom anderen Gerät), leere Entwürfe über `store.discard` (ohne Papierkorb). Wiederherstellen ruft
+  `sync.engine.forgetBlocks` auf, damit die Blöcke erneut gesendet werden (getestet in `engine.test.ts`).
+  Einkaufs-Einträge haben (noch) keinen Papierkorb. Der Knopf steht neben dem Plus in der Kopfleiste.
+- **Wischen zwischen Tabs** (`src/app.tsx`): Ein horizontaler Wisch (mind. 70 px, flach) wechselt zwischen Rezepte,
+  Notizen, Einkauf; Start auf Zeilen, Feldern, Tabellen, Leisten wird ignoriert. Eine Variante mit Fingerfolge wurde
+  auf Wunsch wieder zurückgenommen. Die aktuelle Version ist die einfache mit Einblend-Animation.
+- **Tab-Leiste**: `bottom: calc(var(--safe-bottom) + 10px)` (Originalposition, auf Wunsch).
+- **iPhone-Sonderfälle** (`src/main.tsx`, `src/styles.css`):
+  - Klasse `ios` am `<html>` wird per User-Agent gesetzt. Dann läuft der obere Schimmer bis an die Kante
+    (Statusleiste ist durchsichtig). Auf Android bleibt die Maske aus `#app::before` (oben einfarbig).
+  - Zoom mit zwei Fingern wird per Ereignis verhindert (`gesturestart`, `touchmove`), `maximum-scale=1` im Viewport.
+  - `#app` ist `position: fixed; inset: 0` (ohne feste Höhe, sonst ragt sie unten über den sichtbaren Bereich).
+  - **Ungelöst:** Die installierte App auf dem iPhone endet bei etwa 804 pt, der Bildschirm ist etwa 874 pt hoch
+    (Messung mit Anzeige in der App, inzwischen entfernt). Die unteren etwa 70 pt zeichnet iOS schwarz. Ursache liegt
+    bei iOS; mögliche Wege: nativer Wrapper (Capacitor, braucht Apple-Konto) oder akzeptieren.
+- **Rezept-Eingang**: Abruf ist jetzt etwa jede Sekunde leicht (`select count(C)`), bei Änderung volle Abfrage;
+  volle Abfrage mindestens alle 60 s (`src/inbox.ts`). Die Tabellen-ID steht bewusst im Quellcode.
+- **Service Worker**: Cache-Name `notiz-v6`, nach Änderungen an `public/sw.js` hochzählen.
+
+**Vorgehen für die nächste Sitzung:** zuerst `git pull`, `npx tsc --noEmit`, `npm test`, dann ändern, testen
+(Playwright-Skripte liegen nicht im Repo; siehe Abschnitt 12), committen und pushen. Der Workflow veröffentlicht nach
+jedem Push auf GitHub Pages. Prüfen: Lauf unter Actions grün, und die Programmdatei auf der Live-Adresse ist die neue.
