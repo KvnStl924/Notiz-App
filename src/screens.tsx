@@ -33,7 +33,7 @@ import { InboxPanel } from './inbox-ui';
 import { TrashPanel } from './trash-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
-import { nameColumn, shopAmount } from './units';
+import { convertInText, nameColumn, shopAmount } from './units';
 
 export type Tab = NoteType | 'shopping';
 export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notizen', shopping: 'Einkauf' };
@@ -667,7 +667,7 @@ function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }
           >
             <div class="step-num">{isDone(idx) ? <Check size={14} strokeWidth={3.4} /> : idx + 1}</div>
             <AutoText
-              value={s}
+              value={readOnly ? convertInText(s) : s}
               placeholder={`Schritt ${idx + 1}`}
               autoFocus={focusIdx === idx}
               enterKeyHint="next"

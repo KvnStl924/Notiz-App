@@ -142,6 +142,20 @@ export function shopAmount(amount: string, ingredient: string): string {
   return g ? `${fmt(g.grams, g.grams >= 10 ? 0 : 1)} g (${amount})` : amount;
 }
 
+/**
+ * Mengen im Fließtext (Zubereitung) wie in der Tabelle umrechnen: „2 TL Salz“ wird zu „12 g (2 TL) Salz“.
+ * Die Zutat wird aus den drei Wörtern hinter der Menge erkannt. Was sich nicht umrechnen lässt, bleibt gleich.
+ */
+export function convertInText(text: string): string {
+  return text.replace(/(\d+(?:[.,]\d+)?|\d+\/\d+)\s+([A-Za-zÄÖÜäöüß]+)/g, (match, num: string, word: string, offset: number, full: string) => {
+    const amount = `${num} ${word}`;
+    const after = full.slice(offset + match.length);
+    const ingredient = after.split(/[.,;:!?\n]/)[0].trim().split(/\s+/).slice(0, 3).join(' ');
+    const shown = shopAmount(amount, ingredient);
+    return shown === amount ? match : shown;
+  });
+}
+
 /** Spalte mit dem Namen der Zutat (Zutat/Artikel/… oder letzte Spalte). */
 export function nameColumn(header: string[]): number {
   const h = header.map((x) => x.trim().toLowerCase());

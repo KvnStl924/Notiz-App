@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { densityOf, nameColumn, parseAmount, shopAmount, toGrams } from './units';
+import { convertInText, densityOf, nameColumn, parseAmount, shopAmount, toGrams } from './units';
 
 describe('Mengen lesen', () => {
   it('Zahl und Einheit werden getrennt', () => {
@@ -39,6 +39,9 @@ describe('Umrechnung in Gramm (feste Formel)', () => {
     expect(shopAmount('500 g', 'Mehl')).toBe('500 g');
     expect(shopAmount('0,5 kg', 'Mehl')).toBe('500 g (0,5 kg)');
     expect(shopAmount('1 Stück', 'Ei')).toBe('1 Stück');
+    expect(convertInText('Mit 2 TL Salz würzen und 1 EL Butter zugeben, 400 g Nudeln und 3 Eier.')).toBe(
+      'Mit 12 g (2 TL) Salz würzen und 14 g (1 EL) Butter zugeben, 400 g Nudeln und 3 Eier.',
+    );
   });
   it('Namensspalte wird erkannt', () => {
     expect(nameColumn(['Menge', 'Zutat'])).toBe(1);
