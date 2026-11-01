@@ -36,6 +36,10 @@ document.addEventListener(
   { passive: false },
 );
 
+// iPhone: die Statusleiste ist durchsichtig, der Hintergrund läuft also bis ganz nach oben.
+// Android malt die Leiste in einer Farbe, dort bleibt der Schimmer unterhalb der Leiste.
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) document.documentElement.classList.add('ios');
+
 render(<App />, document.getElementById('app')!);
 void sync.init();
 inbox.start();
