@@ -21,7 +21,7 @@ Konzept, Entscheidungen und Bauplan: [docs/KONZEPT.md](docs/KONZEPT.md)
 - [ ] Google-Drive-Backup und Import von außen
 - [ ] Bilder einfügen
 
-- [x] Rezept-Eingang über eine Google-Tabelle (Claude trägt ein, die App holt ab), siehe [docs/REZEPT-IMPORT.md](docs/REZEPT-IMPORT.md)
+- [x] Automatischer Rezept-Eingang über eine Google-Tabelle, siehe [docs/REZEPT-IMPORT.md](docs/REZEPT-IMPORT.md)
 - [x] Rezept-Import: „Aus Text einfügen“ in der App und `tools/rezept-senden.py`; Anleitung für andere Chats: [docs/REZEPT-IMPORT.md](docs/REZEPT-IMPORT.md)
 
 ## Entwickeln
