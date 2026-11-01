@@ -1,5 +1,6 @@
 import { type Note, type NoteType, newId } from './model';
 import { parseMarkdown } from './markdown';
+import { migrateNote } from './migrate';
 
 /**
  * Macht aus eingefügtem Text (Markdown im Format der App, siehe docs/REZEPT-IMPORT.md) eine neue Notiz.
@@ -9,7 +10,7 @@ import { parseMarkdown } from './markdown';
 export function importMarkdown(text: string, fallback: NoteType): Note | null {
   const t = text.trim();
   if (!t) return null;
-  const note = parseMarkdown(t);
+  const note = migrateNote(parseMarkdown(t));
   if (note.blocks.length === 0 && note.title === 'Ohne Titel') return null;
 
   const head = t.startsWith('---') ? t.split(/\n---/)[0] : '';

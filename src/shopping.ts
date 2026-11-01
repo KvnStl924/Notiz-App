@@ -1,4 +1,5 @@
 import { type Block, type Note, type ShopItem, newId } from './model';
+import { shopAmount } from './units';
 
 export interface Ingredient {
   name: string;
@@ -78,15 +79,15 @@ export function mergeRecipe(existing: ShopItem[], note: Note, now = new Date()):
       res.added.push({
         id: newId(),
         name: g.name,
-        amount: g.amount,
+        amount: shopAmount(g.amount, g.name),
         recipeId: note.id,
         recipeTitle: note.title,
         home: false,
         bought: false,
         addedAt: now.toISOString(),
       });
-    } else if (hit.amount !== g.amount && !hit.bought) {
-      hit.amount = g.amount;
+    } else if (hit.amount !== shopAmount(g.amount, g.name) && !hit.bought) {
+      hit.amount = shopAmount(g.amount, g.name);
       res.updated.push(hit);
     } else {
       res.unchanged++;

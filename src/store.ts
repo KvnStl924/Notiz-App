@@ -3,6 +3,7 @@ import { type Note, type ShopItem, newId } from './model';
 import { demoNotes } from './demo';
 import { mergeRecipe } from './shopping';
 import { trash } from './trash';
+import { migrateNote } from './migrate';
 
 /** localStorage kann fehlen oder Fehler werfen (z. B. im eingebetteten Vorschau-Rahmen): dann nur im Arbeitsspeicher. */
 const mem = new Map<string, string>();
@@ -63,6 +64,7 @@ export class NoteStore extends Collection<Note> {
   constructor(key = 'notiz.notes.v2', demo = true) {
     super(key);
     if (demo && !this.hadData && import.meta.env.VITE_DEMO) for (const n of demoNotes()) this.items.set(n.id, n);
+    for (const n of this.items.values()) migrateNote(n);
   }
   all(): Note[] {
     return [...this.items.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -92,7 +94,7 @@ export class NoteStore extends Collection<Note> {
   }
   /** Änderung vom Sync: speichern, ohne wieder hochzuladen. */
   applyRemote(note: Note) {
-    this.items.set(note.id, note);
+    this.items.set(note.id, migrateNote(note));
     this.persist();
   }
   removeRemote(id: string) {

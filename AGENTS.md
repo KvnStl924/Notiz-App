@@ -122,8 +122,8 @@ und migrieren.
   (Bild-Block existiert im Modell und wird angezeigt, kann aber **noch nicht angelegt** werden).
 - `ShopItem { id, name, amount, recipeId|null, recipeTitle, home, bought, addedAt, rev? }`. „Erledigt“ = `home || bought`.
 - **Zutaten-Erkennung:** `ingredientsOf` nimmt die **erste Tabelle unter einer Überschrift mit „Zutat“** (sonst die erste Tabelle),
-  Spalten per Kopfzeile (`Zutat|Artikel|Produkt|Name`, `Menge|Anzahl`, `Einheit`), Fallback: letzte Spalte = Name.
-  Rezepte brauchen deshalb **genau eine** Zutaten-Tabelle mit den Köpfen `Menge | Einheit | Zutat`.
+  Spalten per Kopfzeile (`Zutat|Artikel|Produkt|Name`, `Menge|Anzahl`), Fallback: letzte Spalte = Name. Menge = Zahl und Einheit in einer Zelle (`2 TL`); Umrechnung in Gramm in `src/units.ts` (feste Formel, Dichten als Richtwerte). Altes Format `Menge | Einheit | Zutat` wird beim Laden automatisch umgestellt (`src/migrate.ts`).
+  Rezepte brauchen deshalb **genau eine** Zutaten-Tabelle mit den Köpfen `Menge | Zutat`.
 
 ## 6. Live-Sync (src/sync/engine.ts) – so funktioniert er
 

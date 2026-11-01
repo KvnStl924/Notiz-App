@@ -33,7 +33,7 @@ export function ImportPanel(props: { type: NoteType; onClose: () => void; onImpo
         </p>
         <textarea
           class="field area tall"
-          placeholder={'# Spaghetti Carbonara\n\n## Zutaten\n| Menge | Einheit | Zutat |\n…'}
+          placeholder={'# Spaghetti Carbonara\n\n## Zutaten\n| Menge | Zutat |\n…'}
           value={text}
           onInput={(e) => {
             setText((e.target as HTMLTextAreaElement).value);

@@ -29,13 +29,13 @@ portionen: 4
 # Spaghetti Carbonara
 
 ## Zutaten
-| Menge | Einheit | Zutat |
-|---|---|---|
-| 400 | g | Spaghetti |
-| 150 | g | Guanciale |
-| 4 | Stück | Eigelb |
-| 80 | g | Pecorino |
-|  |  | Pfeffer (nach Geschmack) |
+| Menge | Zutat |
+|---|---|
+| 400 g | Spaghetti |
+| 150 g | Guanciale |
+| 4 Stück | Eigelb |
+| 80 g | Pecorino |
+|  | Pfeffer (nach Geschmack) |
 
 ## Zubereitung
 1. Reichlich Wasser salzen und die Spaghetti nach Packungsangabe kochen.
@@ -50,11 +50,10 @@ Quelle: https://beispiel.de/carbonara
 - **Kopf:** `typ: rezept` und `portionen: <Zahl>`. Ohne Kopf und ohne Portionen legt die App 4 Portionen an.
 - **Titel:** genau eine Zeile `# Titel` (kurz, ohne „Rezept für …“).
 - **Zutaten:** **genau eine** Tabelle direkt unter der Überschrift `## Zutaten`, mit den Spaltenköpfen
-  **`Menge | Einheit | Zutat`** (genau so geschrieben, sonst findet die Einkaufsliste die Spalten nicht).
+  **`Menge | Zutat`** (genau so geschrieben, sonst findet die Einkaufsliste die Spalten nicht).
   - Eine Zutat pro Zeile. Die Spalte „Zutat“ darf nie leer sein, sonst fehlt sie in der Einkaufsliste.
-  - **Menge** nur als Zahl (`400`, `0,5`, `1,5`). Brüche als Dezimalzahl. Ohne Menge: leer lassen.
-  - **Einheit** kurz: `g`, `kg`, `ml`, `l`, `EL`, `TL`, `Stück`, `Dose`, `Bund`, `Prise`, `Pck.`, `Zehe`. Ohne Einheit: leer.
-  - „nach Geschmack“, „zum Braten“: Menge und Einheit leer, Zusatz in Klammern bei der Zutat.
+  - **Menge** = Zahl **und** Einheit in einer Zelle, z. B. `400 g`, `2 TL`, `0,5 kg`, `1 Dose`. Einheiten: `g`, `kg`, `ml`, `l`, `TL`, `EL`, `Tasse`, `Stück`, `Prise`, `Dose`, `Pck.`, `Zehe`, `Bund`. Ohne Menge: leer lassen.
+  - „nach Geschmack“, „zum Braten“: Menge leer, Zusatz in Klammern bei der Zutat.
   - Gruppen („Für den Teig“, „Für die Soße“): **keine zweite Tabelle**. Die Gruppe in Klammern bei der Zutat nennen, z. B. `Mehl (Teig)`.
   - US-Maße (cups, oz, lb) in **g/ml** umrechnen, sinnvoll runden. Im Zweifel das Original in Klammern dazu.
 - **Zubereitung:** Überschrift `## Zubereitung`, darunter **nummerierte Liste** (`1.`, `2.` …).
@@ -70,7 +69,7 @@ und kürzer. Keine Einleitungen, Geschichten oder Fließtexte der Seite kopieren
 - Seite abrufen. Viele Rezeptseiten enthalten im Quelltext strukturierte Daten (`<script type="application/ld+json">`
   mit `"@type": "Recipe"`): Dort stehen `name`, `recipeYield` (Portionen), `recipeIngredient` und `recipeInstructions`.
   Das ist zuverlässiger als der sichtbare Text.
-- Zutatenzeilen wie „400 g Spaghetti“ in `Menge | Einheit | Zutat` zerlegen.
+- Zutatenzeilen wie „400 g Spaghetti“ in `Menge | Zutat` übernehmen (Menge = „400 g“). Keine Einheit in eine eigene Spalte.
 - Lässt sich die Seite nicht lesen (Bezahlschranke, Fehler), sag das kurz und bitte Kevin, den Rezepttext einzufügen. Rate nicht.
 - Bei einem Foto oder Screenshot: nur übernehmen, was du sicher lesen kannst, bei Unsicherheit nachfragen.
 
@@ -85,7 +84,7 @@ Die App liest diese Tabelle beim Öffnen und danach etwa jede Sekunde, solange s
    Zeit, Titel und das **komplette Rezept als Markdown** (Kopf `---`, `# Titel`, Zutaten-Tabelle, Schritte), Zeilenumbrüche als `\n`.
 
 ```json
-[["2026-11-01 18:30", "Spaghetti Carbonara", "---\ntyp: rezept\nportionen: 4\n---\n# Spaghetti Carbonara\n\n## Zutaten\n| Menge | Einheit | Zutat |\n|---|---|---|\n| 400 | g | Spaghetti |\n| 150 | g | Guanciale |\n\n## Zubereitung\n1. Spaghetti kochen.\n2. Guanciale braten und alles mischen.\n"]]
+[["2026-11-01 18:30", "Spaghetti Carbonara", "---\ntyp: rezept\nportionen: 4\n---\n# Spaghetti Carbonara\n\n## Zutaten\n| Menge | Zutat |\n|---|---|\n| 400 g | Spaghetti |\n| 150 g | Guanciale |\n\n## Zubereitung\n1. Spaghetti kochen.\n2. Guanciale braten und alles mischen.\n"]]
 ```
 
 4. **Nie ändern:** die Kopfzeile (`Zeit | Titel | Rezept`) und bestehende Zeilen. Nichts löschen.
@@ -119,7 +118,7 @@ Das Rezept erscheint dann ohne weiteren Schritt in wenigen Sekunden auf beiden H
 
 ## Prüfliste vor dem Senden
 - [ ] Kopf mit `typ: rezept` und Portionen
-- [ ] Genau eine Zutaten-Tabelle mit den Köpfen `Menge | Einheit | Zutat`
+- [ ] Genau eine Zutaten-Tabelle mit den Köpfen `Menge | Zutat`
 - [ ] In jeder Zeile steht eine Zutat; Mengen sind Zahlen
 - [ ] Schritte nummeriert, in eigenen Worten, mit Zeiten und Temperaturen
 - [ ] Quelle angegeben

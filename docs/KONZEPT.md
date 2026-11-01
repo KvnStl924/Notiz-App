@@ -23,7 +23,7 @@ Es gibt **eine** installierbare Web-App (PWA). Beide nutzen dieselbe App, sie si
 - Notiz = Liste von **Blöcken**:
   - Text (Überschriften, fett/kursiv, Listen)
   - **Checkliste** (abhakbar)
-  - **Tabelle** (nativ, z. B. Zutatenliste mit Spalten Menge / Einheit / Zutat)
+  - **Tabelle** (nativ, z. B. Zutatenliste mit Spalten Menge (Zahl + Einheit, z. B. „2 TL“) / Zutat)
   - **Bild**
   - **Rezept-Vorlage**: Titel, Portionen, Zutaten-Tabelle, Schritt-für-Schritt-Anleitung
 - **Live-Bearbeitung**: Änderungen des Partners erscheinen sofort, mit Anzeige, wer gerade welchen Block bearbeitet
@@ -50,7 +50,7 @@ portionen: 4
 # Spaghetti Carbonara
 
 ## Zutaten
-| Menge | Einheit | Zutat |
+| Menge | Zutat |
 |---|---|---|
 | 400 | g | Spaghetti |
 | 150 | g | Guanciale |

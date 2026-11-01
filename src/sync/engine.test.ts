@@ -117,7 +117,7 @@ describe('Live-Sync', () => {
     const b = await device(s, 'Isabelle');
     const r = newRecipe();
     r.title = 'Dal';
-    (r.blocks[1] as { rows: string[][] }).rows = [['200', 'g', 'Linsen'], ['1', 'Dose', 'Kokosmilch']];
+    (r.blocks[1] as { rows: string[][] }).rows = [['200 g', 'Linsen'], ['1 Dose', 'Kokosmilch']];
     a.notes.save(r);
     a.shop.addFromRecipe(r);
     await settle();

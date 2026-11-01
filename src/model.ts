@@ -59,7 +59,7 @@ export function newRecipe(): Note {
     servings: 4,
     blocks: [
       mk.heading('Zutaten'),
-      mk.table(['Menge', 'Einheit', 'Zutat'], [['', '', '']]),
+      mk.table(['Menge', 'Zutat'], [['', '']]),
       mk.heading('Zubereitung'),
       mk.steps(['']),
     ],
