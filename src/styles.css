@@ -1203,3 +1203,9 @@ svg {
 .field.area.tall {
   height: 220px;
 }
+
+/* Hinweis auf eine neue App-Version: über der Tab-Leiste */
+.toast.update {
+  bottom: calc(var(--safe-bottom) + 92px);
+  z-index: 130;
+}

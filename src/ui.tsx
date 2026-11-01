@@ -221,9 +221,9 @@ export function useScrolled() {
 }
 
 /** Kurzer Hinweis unten im Glas-Stil, optional mit Knopf. */
-export function Toast(props: { text: string; action?: { label: string; run: () => void } }) {
+export function Toast(props: { text: string; action?: { label: string; run: () => void }; class?: string }) {
   return (
-    <div class="toast glass strong" role="status">
+    <div class={'toast glass strong ' + (props.class ?? '')} role="status">
       <span>{props.text}</span>
       {props.action && (
         <button onClick={props.action.run} style={{ color: 'var(--tint)', fontWeight: 600 }}>

@@ -1,7 +1,7 @@
 // Service Worker: macht die App offline nutzbar.
 // Strategie "Netz zuerst": ist Internet da, kommt immer die neueste Version.
 // Ohne Internet wird die zuletzt geladene Version aus dem Cache gestartet.
-const CACHE = 'notiz-v4';
+const CACHE = 'notiz-v5';
 
 // Beim Installieren die App-Dateien vorladen (Startseite, Programm, Design, Schrift, Icons),
 // damit die App auch beim allerersten Mal ohne Netz startet.
@@ -56,7 +56,9 @@ self.addEventListener('fetch', (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       try {
-        const res = await fetch(req);
+        // Startseite, Konfiguration und Manifest immer beim Server nachfragen (GitHub Pages hält Seiten sonst bis zu 10 Min. im Zwischenspeicher)
+        const fresh = req.mode === 'navigate' || /(\/|index\.html|\.json|\.webmanifest)$/.test(url.pathname);
+        const res = await fetch(req, fresh ? { cache: 'no-cache' } : undefined);
         if (res.ok) cache.put(req, res.clone());
         return res;
       } catch (e) {

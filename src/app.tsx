@@ -5,6 +5,8 @@ import { createNote, EditorScreen, ListScreen, TAB_TITLE, type Tab } from './scr
 import { ShopScreen } from './shop-screen';
 import { SyncButton, SyncPanel } from './sync-ui';
 import { useShopping } from './store';
+import { Toast } from './ui';
+import { useUpdateAvailable } from './update';
 
 interface Open {
   id: string;
@@ -28,6 +30,7 @@ const hostWidth = () => document.getElementById('app')!.clientWidth;
 
 export function App() {
   const [tab, setTab] = useState<Tab>('recipe');
+  const updateReady = useUpdateAvailable();
   const openShopping = useShopping().filter((i) => !isDone(i)).length;
   const [open, setOpen] = useState<Open | null>(null);
 
@@ -160,6 +163,7 @@ export function App() {
 
       <div class="dim" ref={dimRef} />
       <SyncPanel />
+      {updateReady && <Toast class="update" text="Neue Version verfügbar" action={{ label: 'Aktualisieren', run: () => location.reload() }} />}
 
       {open && (
         <div class="screen top" ref={edRef} style={{ transform: 'translate3d(100%,0,0)' }}>
