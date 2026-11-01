@@ -36,9 +36,6 @@ document.addEventListener(
   { passive: false },
 );
 
-import { startDiagnostics } from './diag';
-startDiagnostics();
-
 render(<App />, document.getElementById('app')!);
 void sync.init();
 inbox.start();
