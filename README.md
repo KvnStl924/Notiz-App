@@ -3,6 +3,7 @@
 Notiz- und Rezepte-App als installierbare Web-App (PWA) im iOS-Stil mit Liquid-Glass-Optik.
 Läuft auf Android und iPhone ohne App-Store, ohne Browser-Leiste.
 Konzept, Entscheidungen und Bauplan: [docs/KONZEPT.md](docs/KONZEPT.md)
+Übergabe für Coding-Agenten (Codex u. a.): [AGENTS.md](AGENTS.md)
 
 | Dunkel | Hell |
 |---|---|

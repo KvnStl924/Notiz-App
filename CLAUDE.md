@@ -1,6 +1,7 @@
 # Notiz-App – Arbeitsanweisungen für Claude
 
 ## Projekt
+Ausführliche Übergabe (Architektur, Sync, offene Aufgaben, Fallen): `AGENTS.md`.
 Notiz- und Rezepte-App für Kevin (Android/Samsung) und Isabelle (iPhone) als installierbare Web-App (PWA).
 Technik: TypeScript, Preact, Vite. Konzept, Entscheidungen und Bauplan: `docs/KONZEPT.md`.
 
