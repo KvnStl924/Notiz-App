@@ -21,6 +21,21 @@ function syncThemeColor() {
 syncThemeColor();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeColor);
 
+/**
+ * Kein Zoomen mit zwei Fingern (iPhone ignoriert die Viewport-Angabe dazu, daher per Ereignis).
+ * Die App soll sich wie eine native App verhalten.
+ */
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+}
+document.addEventListener(
+  'touchmove',
+  (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+  },
+  { passive: false },
+);
+
 render(<App />, document.getElementById('app')!);
 void sync.init();
 inbox.start();

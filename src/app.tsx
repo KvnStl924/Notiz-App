@@ -42,20 +42,14 @@ export function App() {
   const closing = useRef(false);
   const tabRef = useRef(tab);
   // Richtung des letzten Tabwechsels (für die Wischanimation); 0 = beim Start nur einblenden
-  const slideDir = useRef<0 | 1 | -1 | 2>(0);
-  const swipe = useRef<{ x: number; y: number; t: number; ok: boolean; dir: number } | null>(null);
-  const SWIPE_EXCLUDE =
-    'textarea, input, .row-wrap, .shop-wrap, .tbl, .table-scroll, .li, .card, .tabbar, .panel, .sheet, .menu, .sync-btn';
-  // Während eines Wischens: Verschiebung und Ziel-Tab (wird nicht in der Liste gespeichert, nur für die Anzeige)
-  const [wipe, setWipe] = useState<{ x: number; to: Tab | null; settle: boolean } | null>(null);
-  const dragRef = useRef<{ x: number; to: Tab | null } | null>(null);
-  const TABS_ORDER: Tab[] = ['recipe', 'note', 'shopping'];
-  const renderTab = (t: Tab) =>
-    t === 'shopping' ? <ShopScreen /> : <ListScreen type={t} onOpen={(id) => openNote(id)} onNew={newNote} />;
-  const pageStyle = (x: number, settle: boolean) => ({
-    transform: `translate3d(${x}px,0,0)`,
-    transition: settle ? 'transform .38s var(--ease)' : 'none',
-  });
+  const slideDir = useRef<0 | 1 | -1>(0);
+  const swipe = useRef<{ x: number; y: number; ok: boolean } | null>(null);
+  const TABS: Tab[] = ['recipe', 'note', 'shopping'];
+  const changeTab = (t: Tab) => {
+    const from = TABS.indexOf(tabRef.current);
+    slideDir.current = TABS.indexOf(t) > from ? 1 : -1;
+    setTab(t);
+  };
   tabRef.current = tab;
 
   /** p = 0: Editor draußen, p = 1: Editor ganz offen. */
@@ -146,97 +140,47 @@ export function App() {
     openNote(n.id, true);
   };
 
-  /** Einrasten: auf den Ziel-Tab oder zurück an den Ausgangspunkt, dann Wischzustand lösen. */
-  const settleTo = (to: Tab | null, x: number) => {
-    setWipe({ x, to, settle: true });
-    window.setTimeout(() => {
-      if (to) {
-        slideDir.current = 2; // Tabwechsel ohne zweite Animation
-        setTab(to);
-      }
-      dragRef.current = null;
-      setWipe(null);
-    }, 380);
-  };
-
   return (
     <>
       <div
         class="screen"
         ref={rootRef}
         onPointerDown={(e) => {
-          const ok = !(e.target as HTMLElement).closest(SWIPE_EXCLUDE);
-          swipe.current = { x: e.clientX, y: e.clientY, t: performance.now(), ok, dir: 0 };
-        }}
-        onPointerMove={(e) => {
-          const s = swipe.current;
-          if (!s || !s.ok) return;
-          const dx = e.clientX - s.x;
-          const dy = e.clientY - s.y;
-          if (s.dir === 0) {
-            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
-              s.ok = false; // senkrecht: normales Scrollen
-              return;
-            }
-            if (Math.abs(dx) < 8) return;
-            s.dir = 1;
-            (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          }
-          const i = TABS_ORDER.indexOf(tabRef.current);
-          const to = dx < 0 ? (TABS_ORDER[i + 1] ?? null) : (TABS_ORDER[i - 1] ?? null);
-          const w = hostWidth();
-          // Am ersten oder letzten Tab zieht man nur halb so weit (Gummiband wie bei iOS)
-          const x = Math.max(-w, Math.min(w, to ? dx : dx * 0.35));
-          dragRef.current = { x, to };
-          setWipe({ x, to, settle: false });
+          // Wischen zwischen Tabs nur auf freien Flächen: nicht auf Zeilen, Felder, Tabellen, Leisten
+          const ok = !(e.target as HTMLElement).closest(
+            'textarea, input, .row-wrap, .shop-wrap, .tbl, .table-scroll, .li, .card, .tabbar, .panel, .sheet, .menu, .sync-btn',
+          );
+          swipe.current = { x: e.clientX, y: e.clientY, ok };
         }}
         onPointerUp={(e) => {
           const s = swipe.current;
           swipe.current = null;
-          if (!s || s.dir === 0) return;
-          const cur = dragRef.current;
-          if (!cur) return;
-          const w = hostWidth();
-          const v = (e.clientX - s.x) / Math.max(1, performance.now() - s.t); // px pro ms
-          const commit = !!cur.to && (Math.abs(cur.x) > w * 0.3 || Math.abs(v) > 0.5);
-          const dir = cur.x < 0 ? -1 : 1;
-          settleTo(commit ? cur.to : null, commit ? -dir * w : 0);
+          if (!s || !s.ok) return;
+          const dx = e.clientX - s.x;
+          const dy = e.clientY - s.y;
+          if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+          const i = TABS.indexOf(tabRef.current);
+          if (dx < 0 && i < TABS.length - 1) changeTab(TABS[i + 1]);
+          if (dx > 0 && i > 0) changeTab(TABS[i - 1]);
         }}
-        onPointerCancel={() => {
-          swipe.current = null;
-          if (dragRef.current) settleTo(null, 0);
-        }}
+        onPointerCancel={() => (swipe.current = null)}
       >
         <div
           key={tab}
           class="tab-page"
-          style={
-            wipe
-              ? pageStyle(wipe.x, wipe.settle)
-              : {
-                  animation:
-                    slideDir.current === 2
-                      ? undefined
-                      : slideDir.current === 0
-                        ? 'fade-in .25s var(--ease)'
-                        : `${slideDir.current > 0 ? 'tab-in-r' : 'tab-in-l'} .34s var(--ease)`,
-                }
-          }
+          style={{
+            animation:
+              slideDir.current === 0
+                ? 'fade-in .25s var(--ease)'
+                : `${slideDir.current > 0 ? 'tab-in-r' : 'tab-in-l'} .34s var(--ease)`,
+          }}
         >
-          {renderTab(tab)}
+          {tab === 'shopping' ? (
+            <ShopScreen />
+          ) : (
+            <ListScreen type={tab} onOpen={(id) => openNote(id)} onNew={newNote} />
+          )}
         </div>
-        {wipe && wipe.to && (
-          <div
-            key={'next-' + wipe.to}
-            class="tab-page"
-            style={pageStyle(
-              (TABS_ORDER.indexOf(wipe.to) > TABS_ORDER.indexOf(tab) ? hostWidth() : -hostWidth()) + wipe.x,
-              wipe.settle,
-            )}
-          >
-            {renderTab(wipe.to)}
-          </div>
-        )}
 
         <SyncButton />
 
