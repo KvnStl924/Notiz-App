@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { X } from 'lucide-preact';
 import { inbox, useInbox } from './inbox';
 
-/** Einrichtung und Status des Rezept-Eingangs (Google-Tabelle, in die Claude Rezepte einträgt). */
+/** Einrichtung und Status des Rezept-Eingangs aus einer Google-Tabelle. */
 export function InboxPanel(props: { onClose: () => void }) {
   useInbox();
   const [link, setLink] = useState('');
@@ -31,7 +31,7 @@ export function InboxPanel(props: { onClose: () => void }) {
         {!connected ? (
           <>
             <p class="panel-text">
-              Claude trägt Rezepte in eine Google-Tabelle ein, die App holt sie dort ab und legt sie als neue Rezepte an, alle paar Minuten und beim Öffnen.
+              Neue Zeilen aus der Google-Tabelle werden als Rezepte übernommen. Solange die App geöffnet ist, prüft sie alle 5 Sekunden; im Hintergrund pausiert sie.
             </p>
             <ol class="steps-help">
               <li>
