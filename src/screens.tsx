@@ -113,7 +113,7 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
                   onSelect: () => setImportOpen(true),
                 },
                 ...(props.type === 'recipe'
-                  ? [{ label: 'Rezept-Eingang (Claude)', icon: <Inbox size={20} />, onSelect: () => setInboxOpen(true) }]
+                  ? [{ label: 'Rezept-Eingang', icon: <Inbox size={20} />, onSelect: () => setInboxOpen(true) }]
                   : []),
               ],
             })
