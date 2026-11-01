@@ -76,7 +76,7 @@ und kürzer. Keine Einleitungen, Geschichten oder Fließtexte der Seite kopieren
 
 ## Weg 1: Google-Tabelle „Notiz-App Rezept-Eingang“ (empfohlen)
 Voraussetzung: In diesem Chat ist Kevins Google Drive bzw. Google Tabellen verbunden.
-Die App liest diese Tabelle beim Öffnen und danach alle 5 Sekunden, solange sie sichtbar geöffnet ist. Im Hintergrund pausiert der Abruf; beim Zurückkehren prüft die App sofort. Jede **neue Zeile** wird als **neues Rezept** angelegt (auf beiden Handys per Live-Sync).
+Die App liest diese Tabelle beim Öffnen und danach etwa jede Sekunde, solange sie sichtbar geöffnet ist. Im Hintergrund pausiert der Abruf; beim Zurückkehren prüft die App sofort. Jede **neue Zeile** wird als **neues Rezept** angelegt (auf beiden Handys per Live-Sync).
 
 1. Die App ist fest mit der Rezept-Tabelle verbunden; eine Einrichtung auf jedem Gerät ist nicht nötig.
    Die Tabelle muss auf **„Jeder mit dem Link: Betrachter“** gestellt sein.
@@ -90,7 +90,7 @@ Die App liest diese Tabelle beim Öffnen und danach alle 5 Sekunden, solange sie
 
 4. **Nie ändern:** die Kopfzeile (`Zeit | Titel | Rezept`) und bestehende Zeilen. Nichts löschen.
    Eine Änderung ist eine **neue Zeile** (= neues Rezept); Kevin löscht das alte in der App.
-5. **Kevin sagen:** „Das Rezept ist in der Tabelle. Es erscheint in der App innerhalb von etwa 5 Sekunden, solange sie geöffnet ist. Du kannst auch Rezepte → Plus → *Rezept-Eingang* → *Jetzt prüfen* tippen.“
+5. **Kevin sagen:** „Das Rezept ist in der Tabelle. Es erscheint in der App fast sofort (etwa 1 bis 2 Sekunden), solange sie geöffnet ist. Du kannst auch Rezepte → Plus → *Rezept-Eingang* → *Jetzt prüfen* tippen.“
 
 Die App kann in der Tabelle nichts ändern (nur lesen).
 

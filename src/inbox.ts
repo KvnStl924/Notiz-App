@@ -7,7 +7,12 @@ import { sync } from './sync/manager';
 /** Rezept-Eingang aus der gemeinsamen, öffentlich lesbaren Google-Tabelle. */
 
 const KEY = 'notiz.inbox.v1';
-const POLL_MS = 5_000;
+/** Alle ~1 s eine winzige Abfrage (nur die Zeilenanzahl); die ganze Tabelle nur bei Änderung. */
+const POLL_MS = 1_000;
+/** Zur Sicherheit auch ohne erkannte Änderung ab und zu die ganze Tabelle laden. */
+const FULL_EVERY_MS = 60_000;
+/** Nach einem Fehler (z. B. offline) seltener nachfragen. */
+const RETRY_AFTER_ERROR_MS = 5_000;
 const DEFAULT_SHEET_ID = '1cGwVzjOz1QfMTnONgrWyFYucLpNwrzvHkaMNtPJ3rcE';
 
 interface Saved {
@@ -26,6 +31,13 @@ export interface InboxRow {
 export function parseSheetId(input: string): string | null {
   const m = input.match(/\/d\/([A-Za-z0-9_-]{20,})/) ?? input.trim().match(/^([A-Za-z0-9_-]{25,})$/);
   return m ? m[1] : null;
+}
+
+/** Antwort auf `select count(C)` (CSV: Kopfzeile, dann die Zahl). */
+export function parseCount(csv: string): number | null {
+  const rows = parseCsv(csv);
+  const n = rows.length > 1 ? Number(rows[1][0]) : NaN;
+  return Number.isInteger(n) && n >= 0 ? n : null;
 }
 
 /** CSV nach RFC 4180: Anführungszeichen, doppelte Anführungszeichen und Zeilenumbrüche in Zellen. */
@@ -104,6 +116,11 @@ class Inbox {
   private listeners = new Set<() => void>();
   private running = false;
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastCount: number | null = null;
+  /** Anzahl der Rezepte beim letzten vollen Abruf: Vergleichswert für die erste leichte Abfrage */
+  private fullRowCount: number | null = null;
+  private lastFull = 0;
+  private retryAt = 0;
 
   subscribe(fn: () => void) {
     this.listeners.add(fn);
@@ -157,7 +174,7 @@ class Inbox {
     if (!this.saved || typeof document === 'undefined' || document.visibilityState !== 'visible') return;
     this.pollTimer = setTimeout(() => {
       this.pollTimer = null;
-      void this.check().finally(() => this.schedulePoll());
+      void this.quickCheck().finally(() => this.schedulePoll());
     }, POLL_MS);
   }
 
@@ -195,6 +212,40 @@ class Inbox {
     this.notify();
   }
 
+  private url(query = '') {
+    return `https://docs.google.com/spreadsheets/d/${this.saved!.sheetId}/gviz/tq?tqx=out:csv${query}`;
+  }
+
+  /** Nur die Anzahl der Rezepte in der Tabelle (winzige Antwort). */
+  private async fetchCount(): Promise<number> {
+    const res = await fetch(this.url('&tq=' + encodeURIComponent('select count(C)')), { cache: 'no-store' });
+    const n = res.ok && (res.headers.get('content-type') ?? '').includes('csv') ? parseCount(await res.text()) : null;
+    if (n === null) throw new Error('keine Zahl');
+    return n;
+  }
+
+  /**
+   * Leichte Prüfung im Sekundentakt: Ändert sich die Anzahl der Rezepte in der Tabelle,
+   * wird sofort alles geladen und übernommen. Dazu sicherheitshalber alle 60 s eine volle Prüfung.
+   */
+  private async quickCheck() {
+    if (!this.saved || this.running || Date.now() < this.retryAt) return;
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+    if (sync.saved && sync.view !== 'online') return;
+    try {
+      const count = await this.fetchCount();
+      const base = this.lastCount ?? this.fullRowCount;
+      const changed = base === null || count !== base;
+      this.lastCount = count;
+      if (changed || Date.now() - this.lastFull > FULL_EVERY_MS) await this.check();
+    } catch {
+      this.lastCount = null;
+      this.fullRowCount = null;
+      await this.check(); // meldet den Fehler und setzt den Status
+      if ((this.status as InboxStatus) === 'error') this.retryAt = Date.now() + RETRY_AFTER_ERROR_MS;
+    }
+  }
+
   /** Neue Zeilen der Tabelle als Rezepte übernehmen. */
   async check(force = false) {
     if (!this.saved || this.running) return;
@@ -206,8 +257,7 @@ class Inbox {
     this.status = 'checking';
     this.notify();
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${this.saved.sheetId}/gviz/tq?tqx=out:csv`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(this.url(), { cache: 'no-store' });
       const type = res.headers.get('content-type') ?? '';
       if (!res.ok || !type.includes('csv')) throw new Error('nicht lesbar');
       const rows = rowsFromCsv(await res.text());
@@ -223,6 +273,8 @@ class Inbox {
         if (!this.saved.imported.includes(note.id)) this.saved.imported.push(note.id);
       }
       this.saved.lastCheck = Date.now();
+      this.lastFull = Date.now();
+      this.fullRowCount = rows.length;
       this.persist();
       this.error = '';
       this.status = 'idle';

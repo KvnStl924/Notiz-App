@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { noteFromRow, parseCsv, parseSheetId, rowsFromCsv } from './inbox';
+import { noteFromRow, parseCount, parseCsv, parseSheetId, rowsFromCsv } from './inbox';
 import { ingredientsOf } from './shopping';
 
 const md = `---
@@ -48,6 +48,12 @@ describe('Rezept-Eingang', () => {
   it('ohne Überschrift im Text gilt die Spalte Titel', async () => {
     const n = await noteFromRow({ title: 'Nur Spalte', markdown: '## Zutaten\n| Menge | Zutat |\n|---|---|\n| 1 | Ei |\n' });
     expect(n!.title).toBe('Nur Spalte');
+  });
+  it('liest die Zeilenanzahl aus der leichten Abfrage', () => {
+    expect(parseCount('"count Rezept"\n"3"\n')).toBe(3);
+    expect(parseCount('"count Rezept"\n"0"')).toBe(0);
+    expect(parseCount('<html>Anmelden</html>')).toBeNull();
+    expect(parseCount('')).toBeNull();
   });
   it('erkennt die Tabellen-ID im Link', () => {
     expect(parseSheetId('https://docs.google.com/spreadsheets/d/1cGwVzjOz1QfMTnONgrWyFYucLpNwrzvHkaMNtPJ3rcE/edit?usp=sharing')).toBe(

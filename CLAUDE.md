@@ -31,7 +31,7 @@ Ablauf: `VITE_DEMO=1 npx vite build --outDir /tmp/demo-dist`, alles in eine HTML
 - Rezept-Eingang: Google-Tabelle „Notiz-App Rezept-Eingang“ in Kevins Drive (Spalten Zeit, Titel, Rezept); Claude (in anderen Chats) hängt Zeilen an,
   die App liest sie über `docs.google.com/.../gviz/tq?tqx=out:csv` (Tabelle ist „Jeder mit dem Link: Betrachter“) und legt neue Rezepte an
   (`src/inbox.ts`). Auf Wunsch von Kevin ist die Tabelle **fest in der App verbunden** (`DEFAULT_SHEET_ID`, steht bewusst im Quellcode) und wird alle
-  5 Sekunden geprüft, solange die App sichtbar ist. Funktioniert mit der echten Tabelle.
+  jede Sekunde leicht abgefragt (nur die Zeilenanzahl; bei Änderung wird sofort die ganze Tabelle geladen), solange die App sichtbar ist. Funktioniert mit der echten Tabelle.
 - Rezept-Import aus anderen Chats: `docs/REZEPT-IMPORT.md` (Anleitung) und `tools/rezept-senden.py`.
   Die Anleitung enthält das Programm als Kopie; `src/import-guide.test.ts` prüft, dass beides übereinstimmt.
 - Zeilenenden immer LF (`.gitattributes`). Nach jedem Push den Lauf unter Actions prüfen: Ein roter Test blockiert die Veröffentlichung.

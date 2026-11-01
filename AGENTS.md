@@ -176,7 +176,7 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 1. **Google-Tabelle** „Notiz-App Rezept-Eingang“ (liegt in Kevins Drive, Spalten `Zeit | Titel | Rezept`, Rezept = komplettes Markdown in einer Zelle).
    Die App kennt die Tabelle fest und braucht keine Einrichtung pro Gerät. Der Link steht im öffentlichen Quellcode, weil Kevin die automatische Verbindung ausdrücklich wünscht. Die App (`src/inbox.ts`) liest die Tabelle über
    `https://docs.google.com/spreadsheets/d/<ID>/gviz/tq?tqx=out:csv` (Google sendet CORS-Header für freigegebene Tabellen; vorab
-   mit einer öffentlichen Beispieltabelle geprüft), alle 5 Sekunden solange sichtbar, sofort beim Öffnen/Wiederkehren und auf Knopfdruck; im Hintergrund pausiert. Voraussetzung: Kevin stellt die
+   mit einer öffentlichen Beispieltabelle geprüft), ungefähr **jede Sekunde** solange sichtbar (winzige Abfrage `select count(C)`; nur bei geänderter Zeilenanzahl, sonst alle 60 s, wird die ganze Tabelle geladen), sofort beim Öffnen/Wiederkehren und auf Knopfdruck; im Hintergrund pausiert. Voraussetzung: Kevin stellt die
    Tabelle auf **„Jeder mit dem Link: Betrachter“**.
    **Doppelte verhindern:** Notiz-ID und Block-IDs sind aus dem Zeileninhalt abgeleitet (SHA-256), und die App prüft lokale Notizen,
    `engine.knows(id)` (auch gelöschte) und die lokale Liste `imported`.
@@ -243,8 +243,8 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
      (nicht umgesetzt, **Annahme ungetestet**).
    - Glas-Optik in Safari (`-webkit-backdrop-filter`), Inter vs. SF, Dunkel/Hell.
    - Sync über zwei echte Geräte, Offline-Betrieb, Neuaufbau nach langer Pause.
-2. **Rezept-Eingang auf echten Handys** abnehmen (läuft mit der echten Tabelle, siehe Abschnitt 8). Zu klären: Abruf **alle 5 Sekunden** solange die App
-   sichtbar ist (Wunsch von Kevin) belastet Akku/Datenvolumen und die Google-Abfrage; ggf. auf 15–30 s erhöhen oder nach Inaktivität drosseln. Zellen, die
+2. **Rezept-Eingang auf echten Handys** abnehmen (läuft mit der echten Tabelle, siehe Abschnitt 8). Gemessen (01.11.): Eine Änderung in der Tabelle ist für `gviz` nach ca. 0,4 s abrufbar, 15 Abfragen kurz hintereinander liefen ohne Drosselung. Kevin will
+   eine **sofortige** Aktualisierung (5 s waren ihm zu lang); deshalb Sekundentakt mit leichter Abfrage. Auf Akku/Datenvolumen auf echten Handys achten. Zellen, die
    mit `=`, `+`, `-` beginnen, sind bisher unproblematisch (Rezepte beginnen mit `---`). Die Test-Zeile aus der Tabelle entfernen lassen.
 3. **Browser-Tests ins Repo holen.** Die bisherigen Playwright-Prüfungen lagen nur in `/tmp` und sind veraltet (z. B. öffnet das Plus
    jetzt ein Menü statt direkt ein Rezept anzulegen). Empfehlung: `@playwright/test` mit Emulator, Handy-Viewport (390×844, `isMobile`, `hasTouch`),
