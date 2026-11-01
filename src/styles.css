@@ -1199,3 +1199,7 @@ svg {
   color: var(--label);
   font-weight: 600;
 }
+
+.field.area.tall {
+  height: 220px;
+}

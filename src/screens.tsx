@@ -7,6 +7,7 @@ import {
   Check,
   ChevronRight,
   CircleMinus,
+  ClipboardPaste,
   Copy,
   Ellipsis,
   FileText,
@@ -26,6 +27,7 @@ import { type Block, type Note, type NoteType, mk, newRecipe } from './model';
 import { writeMarkdown } from './markdown';
 import { shop, store, useNote, useNotes } from './store';
 import { sync, usePresence } from './sync/manager';
+import { ImportPanel } from './import-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 
@@ -73,6 +75,8 @@ function subtitle(n: Note): string {
 }
 
 export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void; onNew: () => void }) {
+  const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const all = useNotes();
   const [q, setQ] = useState('');
   const { scrolled, onScroll } = useScrolled();
@@ -88,7 +92,27 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
         <div class="navbar-bg" />
         <div class="nav-title">{TAB_TITLE[props.type]}</div>
         <span />
-        <button class="nav-btn round glass tint" onClick={props.onNew} aria-label="Neu">
+        <button
+          class="nav-btn round glass tint"
+          aria-label="Neu"
+          onClick={(e) =>
+            setMenu({
+              anchor: (e.currentTarget as HTMLElement).getBoundingClientRect(),
+              items: [
+                {
+                  label: props.type === 'recipe' ? 'Neues Rezept' : 'Neue Notiz',
+                  icon: <Plus size={20} />,
+                  onSelect: props.onNew,
+                },
+                {
+                  label: 'Aus Text einfügen',
+                  icon: <ClipboardPaste size={20} />,
+                  onSelect: () => setImportOpen(true),
+                },
+              ],
+            })
+          }
+        >
           <Plus size={24} strokeWidth={2.2} />
         </button>
       </div>
@@ -135,6 +159,18 @@ export function ListScreen(props: { type: NoteType; onOpen: (id: string) => void
           </div>
         )}
       </div>
+
+      {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
+      {importOpen && (
+        <ImportPanel
+          type={props.type}
+          onClose={() => setImportOpen(false)}
+          onImported={(id) => {
+            setImportOpen(false);
+            props.onOpen(id);
+          }}
+        />
+      )}
     </div>
   );
 }

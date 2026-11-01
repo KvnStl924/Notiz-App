@@ -23,5 +23,10 @@ Ablauf: `VITE_DEMO=1 npx vite build --outDir /tmp/demo-dist`, alles in eine HTML
 (`shared_live: "public"`, aktuellem `base_version` und `artifact_title`) veröffentlichen.
 
 ## Stand und nächste Schritte
-Siehe README. Offen für Version 1: Firebase-Login und Live-Sync, Veröffentlichung auf Firebase
-Hosting, Test auf echten Handys; danach Drive-Anbindung, Bilder, Formatierung.
+- Live-App: https://kvnstl924.github.io/Notiz-App/ (GitHub Pages, wird bei jedem Push auf den Branch
+  automatisch gebaut, getestet und veröffentlicht: `.github/workflows/veroeffentlichen.yml`).
+- Firebase-Projekt `notiz-app-98dd6` (Firestore, Regeln in `firestore.rules`), kein Login; Zugriff über den
+  Bereichs-Code im Einladungslink.
+- Rezept-Import aus anderen Chats: `docs/REZEPT-IMPORT.md` (Anleitung) und `tools/rezept-senden.py`.
+  Die Anleitung enthält das Programm als Kopie; `src/import-guide.test.ts` prüft, dass beides übereinstimmt.
+- Offen: Drive-Anbindung, Bilder, Formatierung; Test auf echten Handys.
