@@ -172,10 +172,10 @@ kann ein Häkchen verlieren (Block-Granularität). Tombstones werden nie aufger�
 Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere Chats** geschrieben):
 
 1. **Google-Tabelle** „Notiz-App Rezept-Eingang“ (liegt in Kevins Drive, Spalten `Zeit | Titel | Rezept`, Rezept = komplettes Markdown in einer Zelle).
-   Claude hängt per Google-Sheets-Verbindung eine Zeile an. Die App (`src/inbox.ts`) liest die Tabelle über
+   Die App kennt die Tabelle fest und braucht keine Einrichtung pro Gerät. Der Link steht im öffentlichen Quellcode, weil Kevin die automatische Verbindung ausdrücklich wünscht. Die App (`src/inbox.ts`) liest die Tabelle über
    `https://docs.google.com/spreadsheets/d/<ID>/gviz/tq?tqx=out:csv` (Google sendet CORS-Header für freigegebene Tabellen; vorab
-   mit einer öffentlichen Beispieltabelle geprüft), alle 5 Minuten, beim Öffnen und auf Knopfdruck. Voraussetzung: Kevin stellt die
-   Tabelle auf **„Jeder mit dem Link: Betrachter“** und fügt den Link in der App ein (Rezepte → Plus → „Rezept-Eingang (Claude)“).
+   mit einer öffentlichen Beispieltabelle geprüft), alle 5 Sekunden solange sichtbar, sofort beim Öffnen/Wiederkehren und auf Knopfdruck; im Hintergrund pausiert. Voraussetzung: Kevin stellt die
+   Tabelle auf **„Jeder mit dem Link: Betrachter“**.
    **Doppelte verhindern:** Notiz-ID und Block-IDs sind aus dem Zeileninhalt abgeleitet (SHA-256), und die App prüft lokale Notizen,
    `engine.knows(id)` (auch gelöschte) und die lokale Liste `imported`.
    **Stand:** gebaut und im Browser mit nachgebauter Google-Antwort getestet; mit der **echten** Tabelle noch **nicht**
