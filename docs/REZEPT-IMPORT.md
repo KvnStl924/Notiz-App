@@ -76,11 +76,10 @@ und kürzer. Keine Einleitungen, Geschichten oder Fließtexte der Seite kopieren
 
 ## Weg 1: Google-Tabelle „Notiz-App Rezept-Eingang“ (empfohlen)
 Voraussetzung: In diesem Chat ist Kevins Google Drive bzw. Google Tabellen verbunden.
-Die App liest diese Tabelle alle paar Minuten und beim Öffnen und legt jede **neue Zeile** als **neues Rezept** an
-(auf beiden Handys, per Live-Sync). Du musst danach nichts weiter tun.
+Die App liest diese Tabelle beim Öffnen und danach alle 5 Sekunden, solange sie sichtbar geöffnet ist. Im Hintergrund pausiert der Abruf; beim Zurückkehren prüft die App sofort. Jede **neue Zeile** wird als **neues Rezept** angelegt (auf beiden Handys per Live-Sync).
 
-1. **Tabelle finden:** Drive-Suche nach dem Titel `Notiz-App Rezept-Eingang` (liegt in Kevins eigenem Drive).
-   Finde sie nicht oder kannst du nicht suchen: Kevin um den Tabellen-Link bitten (die ID steht im Link nach `/d/`).
+1. Die App ist fest mit der Rezept-Tabelle verbunden; eine Einrichtung auf jedem Gerät ist nicht nötig.
+   Die Tabelle muss auf **„Jeder mit dem Link: Betrachter“** gestellt sein.
 2. **Namen des Tabellenblatts** mit `get_spreadsheet` nachsehen. Er heißt oft `Untitled`, `Tabelle1` oder `Sheet1`.
 3. **Genau eine Zeile anhängen** (`append_values`, Bereich `<Blattname>!A1`) mit drei Zellen:
    Zeit, Titel und das **komplette Rezept als Markdown** (Kopf `---`, `# Titel`, Zutaten-Tabelle, Schritte), Zeilenumbrüche als `\n`.
@@ -91,12 +90,9 @@ Die App liest diese Tabelle alle paar Minuten und beim Öffnen und legt jede **n
 
 4. **Nie ändern:** die Kopfzeile (`Zeit | Titel | Rezept`) und bestehende Zeilen. Nichts löschen.
    Eine Änderung ist eine **neue Zeile** (= neues Rezept); Kevin löscht das alte in der App.
-5. **Kevin sagen:** „Das Rezept ist in der Tabelle. Es erscheint in der App innerhalb weniger Minuten, sofort,
-   wenn du Rezepte → Plus → *Rezept-Eingang (Claude)* → *Jetzt prüfen* tippst.“
+5. **Kevin sagen:** „Das Rezept ist in der Tabelle. Es erscheint in der App innerhalb von etwa 5 Sekunden, solange sie geöffnet ist. Du kannst auch Rezepte → Plus → *Rezept-Eingang* → *Jetzt prüfen* tippen.“
 
-Einmalig muss **Kevin** (nicht du) in der App verbinden: Tabelle in Google Drive teilen mit „Jeder mit dem Link: Betrachter“
-und den Link in der App unter Rezepte → Plus → *Rezept-Eingang (Claude)* einfügen. Kommt nichts an, frage zuerst,
-ob das erledigt ist. Die App kann in der Tabelle nichts ändern (nur lesen).
+Die App kann in der Tabelle nichts ändern (nur lesen).
 
 ## Weg 2: Text zum Einfügen (funktioniert immer, auch auf dem Handy)
 1. Gib das fertige Rezept in **genau einem Codeblock** aus (so kann Kevin es mit einem Fingertipp kopieren).
