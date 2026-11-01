@@ -80,6 +80,9 @@ body {
   position: fixed;
   top: 0;
   bottom: 0;
+  /* Ganze sichtbare Höhe (auch wenn Safari-Leisten ein- und ausgeblendet werden) */
+  height: 100vh;
+  height: 100dvh;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -319,7 +322,8 @@ svg {
 .tabbar {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--safe-bottom) + 10px);
+  /* Auf dem iPhone liegt der Bereich unten bei ca. 34 pt: nur einen Bruchteil davon nutzen, damit die Leiste unten sitzt */
+  bottom: calc(var(--safe-bottom) * 0.2 + 8px);
   transform: translateX(-50%);
   z-index: 30;
   display: flex;
