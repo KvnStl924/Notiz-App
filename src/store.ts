@@ -133,8 +133,8 @@ export class ShopStore extends Collection<ShopItem> {
     return this.all().filter((i) => i.recipeId === id);
   }
   /** Zutaten eines Rezepts übernehmen (ohne Doppelte). */
-  addFromRecipe(note: Note) {
-    const r = mergeRecipe(this.all(), note);
+  addFromRecipe(note: Note, factor = 1) {
+    const r = mergeRecipe(this.all(), note, undefined, factor);
     for (const i of [...r.added, ...r.updated]) this.items.set(i.id, i);
     if (r.added.length || r.updated.length) {
       this.persist();

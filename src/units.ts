@@ -142,17 +142,40 @@ export function shopAmount(amount: string, ingredient: string): string {
   return g ? `${fmt(g.grams, g.grams >= 10 ? 0 : 1)} g (${amount})` : amount;
 }
 
+/** Zahl plus Wort im Fließtext, z. B. „2 TL“ (ohne Satzpunkt am Wortende). */
+const AMOUNT_IN_TEXT = /(\d+(?:[.,]\d+)?|\d+\/\d+)\s+([A-Za-zÄÖÜäöüß]+)/g;
+
 /**
  * Mengen im Fließtext (Zubereitung) wie in der Tabelle umrechnen: „2 TL Salz“ wird zu „12 g (2 TL) Salz“.
  * Die Zutat wird aus den drei Wörtern hinter der Menge erkannt. Was sich nicht umrechnen lässt, bleibt gleich.
  */
 export function convertInText(text: string): string {
-  return text.replace(/(\d+(?:[.,]\d+)?|\d+\/\d+)\s+([A-Za-zÄÖÜäöüß]+)/g, (match, num: string, word: string, offset: number, full: string) => {
+  return text.replace(AMOUNT_IN_TEXT, (match, num: string, word: string, offset: number, full: string) => {
     const amount = `${num} ${word}`;
     const after = full.slice(offset + match.length);
     const ingredient = after.split(/[.,;:!?\n]/)[0].trim().split(/\s+/).slice(0, 3).join(' ');
     const shown = shopAmount(amount, ingredient);
     return shown === amount ? match : shown;
+  });
+}
+
+/** Zahl ohne Tausenderpunkt, damit sie wieder lesbar ist („1500“, nicht „1.500“). */
+const plain = (n: number, digits: number) => n.toLocaleString('de-DE', { maximumFractionDigits: digits, useGrouping: false });
+
+/** Menge um einen Faktor verändern (Portionen): Zahl ändert sich, Einheit und Schreibweise bleiben. */
+export function scaleAmount(amount: string, factor: number): string {
+  const p = parseAmount(amount);
+  if (factor === 1 || p.qty === null) return amount;
+  const n = p.qty * factor;
+  return amount.replace(p.numText, plain(n, n >= 10 ? 0 : 1));
+}
+
+/** Mengen im Fließtext mit einer bekannten Einheit um einen Faktor verändern („2 TL“ → „4 TL“). */
+export function scaleInText(text: string, factor: number): string {
+  if (factor === 1) return text;
+  return text.replace(AMOUNT_IN_TEXT, (match, num: string, word: string) => {
+    const p = parseAmount(`${num} ${word}`);
+    return p.unit ? scaleAmount(`${num} ${word}`, factor) : match;
   });
 }
 

@@ -1,5 +1,5 @@
 import { type Block, type Note, type ShopItem, newId } from './model';
-import { shopAmount } from './units';
+import { scaleAmount, shopAmount } from './units';
 
 export interface Ingredient {
   name: string;
@@ -68,8 +68,9 @@ export interface MergeResult {
  * Bereits vorhandene Zutaten (gleicher Name) behalten ihre Häkchen; nur die Menge wird
  * angepasst, solange sie noch nicht gekauft ist.
  */
-export function mergeRecipe(existing: ShopItem[], note: Note, now = new Date()): MergeResult {
-  const ing = ingredientsOf(note);
+export function mergeRecipe(existing: ShopItem[], note: Note, now = new Date(), factor = 1): MergeResult {
+  // factor: gewählte Portionen im Verhältnis zum Rezept (2 Portionen von 1 = 2)
+  const ing = ingredientsOf(note).map((g) => ({ ...g, amount: scaleAmount(g.amount, factor) }));
   const mine = existing.filter((i) => i.recipeId === note.id);
   const res: MergeResult = { added: [], updated: [], unchanged: 0, found: ing.length };
 

@@ -1,4 +1,4 @@
-import { Fragment } from 'preact';
+import { createContext, Fragment } from 'preact';
 import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 import {
   ArrowDown,
@@ -33,10 +33,13 @@ import { InboxPanel } from './inbox-ui';
 import { TrashPanel } from './trash-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
-import { convertInText, nameColumn, shopAmount } from './units';
+import { convertInText, nameColumn, scaleAmount, scaleInText, shopAmount } from './units';
 
 export type Tab = NoteType | 'shopping';
 export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notizen', shopping: 'Einkauf' };
+
+/** Faktor für die Mengen im Lesemodus (gewählte Portionen / Portionen des Rezepts). 1 = unverändert. */
+const ScaleCtx = createContext(1);
 
 /* ───────────────────────── Liste ───────────────────────── */
 
@@ -258,6 +261,10 @@ export function EditorScreen(props: {
   const [menu, setMenu] = useState<{ anchor: DOMRect; items: MenuItem[] } | null>(null);
   const [ask, setAsk] = useState<Ask | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
+  // Gewählte Portionen fürs Lesen (nur für diese Ansicht, das Rezept selbst bleibt unverändert)
+  const [portions, setPortions] = useState<number | null>(null);
+  const shown = portions ?? note?.servings ?? 1;
+  const factor = shown / (note?.servings ?? 1);
   const { scrolled, onScroll } = useScrolled();
   // Rezepte öffnen im Lesemodus (nichts lässt sich versehentlich ändern); neue Rezepte direkt im Bearbeiten-Modus
   const [editing, setEditing] = useState(!note || note.type !== 'recipe' || props.focusTitle);
@@ -305,7 +312,7 @@ export function EditorScreen(props: {
   };
 
   const addToShopping = () => {
-    const r = shop.addFromRecipe(note);
+    const r = shop.addFromRecipe(note, readOnly ? factor : 1);
     force((n) => n + 1);
     const n = r.added.length;
     const text =
@@ -424,6 +431,7 @@ export function EditorScreen(props: {
         </div>
       </div>
 
+      <ScaleCtx.Provider value={readOnly ? factor : 1}>
       <ReadOnlyCtx.Provider value={readOnly}>
       <div class={'scroll' + (scrolled ? ' scrolled' : '') + (readOnly ? ' readonly' : '')} onScroll={onScroll}>
         <AutoText
@@ -442,7 +450,16 @@ export function EditorScreen(props: {
         {note.type === 'recipe' && readOnly && (
           <>
             <div class="meta-row" style={{ marginBottom: '12px' }}>
-              <span>{note.servings ?? 1} Portionen</span>
+              <span>Portionen</span>
+              <div class="stepper glass">
+                <button aria-label="Weniger" onClick={() => setPortions(Math.max(1, shown - 1))}>
+                  <Minus size={18} strokeWidth={2.4} />
+                </button>
+                <span>{shown}</span>
+                <button aria-label="Mehr" onClick={() => setPortions(shown + 1)}>
+                  <Plus size={18} strokeWidth={2.4} />
+                </button>
+              </div>
             </div>
             <button class="cta glass" onClick={addToShopping}>
               <ShoppingCart size={22} />
@@ -510,6 +527,7 @@ export function EditorScreen(props: {
         })}
       </div>
       </ReadOnlyCtx.Provider>
+      </ScaleCtx.Provider>
 
       {toast && <Toast text={toast.text} action={toast.action} />}
       {menu && <Menu anchor={menu.anchor} items={menu.items} onClose={() => setMenu(null)} />}
@@ -641,6 +659,7 @@ function ChecklistView(props: { b: Of<'checklist'>; focus: boolean; update: () =
 function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }) {
   const { b, update } = props;
   const readOnly = useContext(ReadOnlyCtx);
+  const factor = useContext(ScaleCtx);
   // Schritte sind einfache Texte; Fokus per Index
   const [focusIdx, setFocusIdx] = useState<number | null>(props.focus ? 0 : null);
 
@@ -667,7 +686,7 @@ function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }
           >
             <div class="step-num">{isDone(idx) ? <Check size={14} strokeWidth={3.4} /> : idx + 1}</div>
             <AutoText
-              value={readOnly ? convertInText(s) : s}
+              value={readOnly ? convertInText(scaleInText(s, factor)) : s}
               placeholder={`Schritt ${idx + 1}`}
               autoFocus={focusIdx === idx}
               enterKeyHint="next"
@@ -722,6 +741,7 @@ function StepsView(props: { b: Of<'steps'>; focus: boolean; update: () => void }
 function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) => void; readOnly: boolean }) {
   const { b, update } = props;
   const ro = props.readOnly;
+  const factor = useContext(ScaleCtx);
   const nameCol = nameColumn(b.header);
   const isQty = (c: number) => b.header[c]?.trim().toLowerCase() === 'menge';
   const cols = b.header.length;
@@ -762,7 +782,7 @@ function TableView(props: { b: Of<'table'>; update: () => void; ask: (a: Ask) =>
                 <div key={`c${ri}-${c}`}>
                   {isQty(c) ? (
                     <AutoText
-                      value={ro ? shopAmount(cell, r[nameCol] ?? '') : cell}
+                      value={ro ? shopAmount(scaleAmount(cell, factor), r[nameCol] ?? '') : cell}
                       placeholder="z. B. 2 TL"
                       onInput={(v) => {
                         r[c] = v;
