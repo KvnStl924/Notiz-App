@@ -41,6 +41,26 @@ export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notize
 /** Faktor für die Mengen im Lesemodus (gewählte Portionen / Portionen des Rezepts). 1 = unverändert. */
 const ScaleCtx = createContext(1);
 
+/** Gewählte Portionen je Rezept, nur auf diesem Gerät gespeichert (nicht im gemeinsamen Bereich). */
+const PORTIONS_KEY = 'notiz.portionen.v1';
+function savedPortions(id: string): number | null {
+  try {
+    const v = (JSON.parse(localStorage.getItem(PORTIONS_KEY) ?? '{}') as Record<string, unknown>)[id];
+    return typeof v === 'number' ? v : null;
+  } catch {
+    return null;
+  }
+}
+function savePortions(id: string, n: number) {
+  try {
+    const all = JSON.parse(localStorage.getItem(PORTIONS_KEY) ?? '{}') as Record<string, number>;
+    all[id] = n;
+    localStorage.setItem(PORTIONS_KEY, JSON.stringify(all));
+  } catch {
+    /* Speicher nicht verfügbar: dann gilt die Wahl nur für diese Ansicht */
+  }
+}
+
 /* ───────────────────────── Liste ───────────────────────── */
 
 function plain(n: Note): string {
@@ -262,7 +282,11 @@ export function EditorScreen(props: {
   const [ask, setAsk] = useState<Ask | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   // Gewählte Portionen fürs Lesen (nur für diese Ansicht, das Rezept selbst bleibt unverändert)
-  const [portions, setPortions] = useState<number | null>(null);
+  const [portions, setPortions] = useState<number | null>(() => savedPortions(props.id));
+  const choosePortions = (n: number) => {
+    setPortions(n);
+    savePortions(props.id, n);
+  };
   const shown = portions ?? note?.servings ?? 1;
   const factor = shown / (note?.servings ?? 1);
   const { scrolled, onScroll } = useScrolled();
@@ -452,11 +476,11 @@ export function EditorScreen(props: {
             <div class="meta-row" style={{ marginBottom: '12px' }}>
               <span>Portionen</span>
               <div class="stepper glass">
-                <button aria-label="Weniger" onClick={() => setPortions(Math.max(1, shown - 1))}>
+                <button aria-label="Weniger" onClick={() => choosePortions(Math.max(1, shown - 1))}>
                   <Minus size={18} strokeWidth={2.4} />
                 </button>
                 <span>{shown}</span>
-                <button aria-label="Mehr" onClick={() => setPortions(shown + 1)}>
+                <button aria-label="Mehr" onClick={() => choosePortions(shown + 1)}>
                   <Plus size={18} strokeWidth={2.4} />
                 </button>
               </div>
