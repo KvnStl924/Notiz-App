@@ -41,10 +41,27 @@ document.addEventListener(
 // Android malt die Leiste in einer Farbe, dort bleibt der Schimmer unterhalb der Leiste.
 if (/iPhone|iPad|iPod/.test(navigator.userAgent)) document.documentElement.classList.add('ios');
 
+/**
+ * iPhone (Safari/PWA): nach dem Zurückkehren aus dem Hintergrund bleiben Glas-Flächen (backdrop-filter)
+ * manchmal als alte Bilder stehen. Ein erzwungenes Neuzeichnen der Oberfläche behebt das.
+ */
+function repaintOnReturn() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    const app = document.getElementById('app')!;
+    app.style.transform = 'translateZ(0)';
+    void app.offsetHeight; // Layout erzwingen
+    requestAnimationFrame(() => {
+      app.style.transform = '';
+    });
+  });
+}
+
 render(<App />, document.getElementById('app')!);
 void sync.init();
 inbox.start();
 keepScreenOn();
+repaintOnReturn();
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
