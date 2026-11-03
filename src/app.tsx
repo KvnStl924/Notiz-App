@@ -70,13 +70,23 @@ export function App() {
     }, 430);
   };
 
+  /**
+   * Die Liste hinter einer offenen Notiz wird ausgeblendet: Das Glas des Editors zeigt sonst auf dem iPhone
+   * nach einem App-Wechsel die alte Liste an. Sichtbar bleibt sie während des Öffnens und Schließens.
+   */
+  const setRootHidden = (hidden: boolean) => {
+    if (rootRef.current) rootRef.current.style.visibility = hidden ? 'hidden' : '';
+  };
+
   // Push-Animation, sobald der Editor eingehängt ist
   useLayoutEffect(() => {
     if (!open) return;
     closing.current = false;
     setProgress(0);
     edRef.current?.getBoundingClientRect(); // Layout erzwingen
-    animateTo(1);
+    animateTo(1, () => {
+      if (!closing.current) setRootHidden(true);
+    });
   }, [open?.id]);
 
   const openNote = (id: string, focusTitle = false) => {
@@ -92,6 +102,7 @@ export function App() {
   const close = (fromNavigation = false) => {
     if (closing.current) return;
     closing.current = true;
+    setRootHidden(false);
     animateTo(0, () => {
       setOpen(null);
       if (rootRef.current) rootRef.current.style.transform = '';
@@ -119,6 +130,7 @@ export function App() {
     drag.current = { x: e.clientX, t: performance.now(), id: e.pointerId };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     [rootRef.current, dimRef.current, edRef.current].forEach((el) => el?.classList.remove('animating'));
+    setRootHidden(false);
   };
   const onEdgeMove = (e: PointerEvent) => {
     if (!drag.current) return;
@@ -132,7 +144,7 @@ export function App() {
     const dx = e.clientX - d.x;
     const v = dx / Math.max(1, performance.now() - d.t); // px pro ms
     if (dx > hostWidth() * 0.4 || v > 0.5) close();
-    else animateTo(1);
+    else animateTo(1, () => setRootHidden(true));
   };
 
   const newNote = () => {
