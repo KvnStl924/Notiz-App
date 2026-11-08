@@ -34,6 +34,29 @@ import { TrashPanel } from './trash-ui';
 import { personColor } from './sync-ui';
 import { AutoText, CheckCircle, Menu, type MenuItem, ReadOnlyCtx, Sheet, SwipeRow, Toast, useScrolled } from './ui';
 import { convertInText, nameColumn, scaleAmount, scaleInText, shopAmount } from './units';
+import { estimateCalories } from './calories';
+import { ingredientsOf } from './shopping';
+
+/** Kalorien des ganzen Gerichts (mit den gerade gewählten Portionen), grob geschätzt. */
+function CalorieRow(props: { note: Note; factor: number }) {
+  const rows = ingredientsOf(props.note).map((g) => ({ name: g.name, amount: scaleAmount(g.amount, props.factor) }));
+  if (rows.length === 0) return null;
+  const { kcal, missing } = estimateCalories(rows);
+  const rounded = Math.round(kcal / 10) * 10;
+  return (
+    <div class="kcal">
+      <div class="meta-row" style={{ margin: '0 4px' }}>
+        <span>Kalorien (ganzes Gericht)</span>
+        <span class="kcal-value">ca. {rounded.toLocaleString('de-DE')} kcal</span>
+      </div>
+      {missing.length > 0 && (
+        <p class="kcal-missing">
+          Nicht mitgezählt: {missing.join(', ')}. Gewicht in Klammern ergänzen, z. B. „1 Dose (140 g)“.
+        </p>
+      )}
+    </div>
+  );
+}
 
 export type Tab = NoteType | 'shopping';
 export const TAB_TITLE: Record<Tab, string> = { recipe: 'Rezepte', note: 'Notizen', shopping: 'Einkauf' };
@@ -485,6 +508,7 @@ export function EditorScreen(props: {
                 </button>
               </div>
             </div>
+            <CalorieRow note={note} factor={factor} />
             <button class="cta glass" onClick={addToShopping}>
               <ShoppingCart size={22} />
               <span>{onList ? 'Einkaufsliste aktualisieren' : 'Zur Einkaufsliste hinzufügen'}</span>

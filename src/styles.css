@@ -489,6 +489,18 @@ svg {
   color: var(--label-2);
   font-size: 15px;
 }
+.kcal {
+  margin: 0 0 18px;
+}
+.kcal-value {
+  color: var(--label);
+  font-variant-numeric: tabular-nums;
+}
+.kcal-missing {
+  margin: 6px 4px 0;
+  font-size: 13px;
+  color: var(--label-3);
+}
 .stepper {
   display: inline-flex;
   align-items: center;

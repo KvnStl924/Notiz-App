@@ -131,11 +131,35 @@ export function toGrams(amount: string, ingredient: string): Grams | null {
   return null;
 }
 
+/** Eigenes Gewicht in Klammern, z. B. „1 Dose (140 g)“ oder „2 Zehen (je 5 g)“. */
+const PAREN_WEIGHT = /\(\s*(?:je\s+|ca\.?\s*)?(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l)\s*\)/i;
+
+/**
+ * Gewicht aus der Klammer, bezogen auf ein Stück (eine Dose, eine Zehe) und mal Anzahl genommen:
+ * „2 Dosen (140 g)“ = 280 g. So stimmt es auch, wenn die Portionen die Anzahl ändern. null ohne Klammer.
+ */
+export function parenGrams(amount: string): number | null {
+  const m = amount.match(PAREN_WEIGHT);
+  if (!m) return null;
+  const unit = m[2].toLowerCase();
+  const one = Number(m[1].replace(',', '.')) * (unit === 'kg' || unit === 'l' ? 1000 : 1);
+  const rest = parseAmount(amount.replace(PAREN_WEIGHT, ' '));
+  // „500 g (0,5 kg)“: vorne steht schon ein Gewicht, die Klammer ist nur eine Erklärung
+  if (['g', 'kg', 'ml', 'l'].includes(rest.unit)) return null;
+  return one * (rest.qty ?? 1);
+}
+
 /**
  * Anzeige einer Menge (Zutatenliste, Lesemodus und Einkaufsliste): in Gramm, die Angabe aus dem Rezept
  * in Klammern dahinter. Schon Gramm bleibt unverändert, was sich nicht umrechnen lässt, auch.
  */
 export function shopAmount(amount: string, ingredient: string): string {
+  const own = parenGrams(amount);
+  if (own !== null) {
+    const rest = amount.replace(PAREN_WEIGHT, ' ').replace(/\s+/g, ' ').trim();
+    const g = `${fmt(own, own >= 10 ? 0 : 1)} g`;
+    return rest ? `${g} (${rest})` : g;
+  }
   const p = parseAmount(amount);
   if (!p.unit || p.unit === 'g') return amount;
   const g = toGrams(amount, ingredient);

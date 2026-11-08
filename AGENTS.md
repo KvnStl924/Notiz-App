@@ -332,3 +332,14 @@ Drei Wege, Details in `docs/REZEPT-IMPORT.md` (diese Anleitung ist für **andere
 **Vorgehen für die nächste Sitzung:** zuerst `git pull`, `npx tsc --noEmit`, `npm test`, dann ändern, testen
 (Playwright-Skripte liegen nicht im Repo; siehe Abschnitt 12), committen und pushen. Der Workflow veröffentlicht nach
 jedem Push auf GitHub Pages. Prüfen: Lauf unter Actions grün, und die Programmdatei auf der Live-Adresse ist die neue.
+
+## 16. Nachtrag (Stand 08.11.2026)
+
+- **Kalorien** (`src/calories.ts`): Im Lesemodus eines Rezepts steht „Kalorien (ganzes Gericht) ca. … kcal“ für die
+  gewählten Portionen (bewusst nicht pro Portion). Lebensmittel-Tabelle `FOODS` im Code (kcal je 100 g, Stück- und
+  Dosengewicht, Richtwerte); erkannt wird am Wort, von hinten gesucht. Unbekanntes wird unter „Nicht mitgezählt“ genannt.
+- **Gewicht in Klammern** (`parenGrams` in `src/units.ts`): „1 Dose (140 g)“ = Gewicht von einem Stück, mal Anzahl;
+  wird für Kalorien und die Gramm-Anzeige genutzt („140 g (1 Dose)“). Steht vorne schon g/kg/ml/l, zählt die Klammer nicht.
+- **Hochformat**: Manifest `portrait` plus `screen.orientation.lock` in `src/main.tsx` (iPhone kann nicht gesperrt werden).
+- **iPhone-Anzeigefehler**: Liste hinter einer offenen Notiz wird ausgeblendet (`setRootHidden` in `src/app.tsx`), sonst
+  zeigte das Glas nach App-Wechsel die alte Liste.
