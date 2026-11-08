@@ -41,7 +41,7 @@ import { ingredientsOf } from './shopping';
 function CalorieRow(props: { note: Note; factor: number }) {
   const rows = ingredientsOf(props.note).map((g) => ({ name: g.name, amount: scaleAmount(g.amount, props.factor) }));
   if (rows.length === 0) return null;
-  const { kcal, missing } = estimateCalories(rows);
+  const { kcal, unknown, noWeight } = estimateCalories(rows);
   const rounded = Math.round(kcal / 10) * 10;
   return (
     <div class="kcal">
@@ -49,9 +49,15 @@ function CalorieRow(props: { note: Note; factor: number }) {
         <span>Kalorien (ganzes Gericht)</span>
         <span class="kcal-value">ca. {rounded.toLocaleString('de-DE')} kcal</span>
       </div>
-      {missing.length > 0 && (
+      {unknown.length > 0 && (
         <p class="kcal-missing">
-          Nicht mitgezählt: {missing.join(', ')}. Gewicht in Klammern ergänzen, z. B. „1 Dose (140 g)“.
+          Unbekannt: {unknown.join(', ')}. Kalorien je 100 g (steht auf der Packung) in Klammern hinter die Zutat
+          schreiben, z. B. „Cremefine (90 kcal)“.
+        </p>
+      )}
+      {noWeight.length > 0 && (
+        <p class="kcal-missing">
+          Ohne Gewicht: {noWeight.join(', ')}. Gewicht in Klammern hinter die Menge schreiben, z. B. „1 Dose (140 g)“.
         </p>
       )}
     </div>

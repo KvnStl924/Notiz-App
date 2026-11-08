@@ -37,6 +37,12 @@ const FOODS: [string, number, number?, number?][] = [
   ['kokosmilch', 180, 0, 400],
   ['kondensmilch', 130],
   ['kochsahne', 170],
+  ['cremefine', 120],
+  ['kochcreme', 120],
+  ['tzatziki', 120],
+  ['zaziki', 120],
+  ['pesto', 450],
+  ['hummus', 300],
   ['schlagsahne', 310],
   ['schmand', 240],
   ['frischkäse', 250],
@@ -290,24 +296,36 @@ export function gramsOf(amount: string, name: string): number | null {
   return null;
 }
 
+/** Eigene Kalorien je 100 g in Klammern hinter der Zutat, z. B. „Rama Cremefine 7 % (90 kcal)“. */
+const OWN_KCAL = /\(\s*(?:ca\.?\s*)?(\d+(?:[.,]\d+)?)\s*kcal\s*\)/i;
+
+export function ownKcal(name: string): number | null {
+  const m = name.match(OWN_KCAL);
+  return m ? Number(m[1].replace(',', '.')) : null;
+}
+
 export interface CalorieEstimate {
   kcal: number;
-  /** Zutaten, die nicht mitgezählt sind (unbekannt oder ohne bestimmbares Gewicht) */
-  missing: string[];
+  /** Zutaten, die nicht in der Tabelle stehen (Gewicht wäre bekannt oder egal) */
+  unknown: string[];
+  /** Zutaten, deren Gewicht sich nicht bestimmen lässt */
+  noWeight: string[];
 }
+
+/** Name ohne eigene Angaben in Klammern, für die Anzeige. */
+const shortName = (name: string) => name.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim() || name;
 
 export function estimateCalories(rows: { name: string; amount: string }[]): CalorieEstimate {
   let kcal = 0;
-  const missing: string[] = [];
+  const unknown: string[] = [];
+  const noWeight: string[] = [];
   for (const r of rows) {
-    const food = foodOf(r.name);
-    if (food && food.kcal === 0) continue; // Salz, Gewürze, Wasser
+    const per100 = ownKcal(r.name) ?? foodOf(r.name)?.kcal ?? null;
+    if (per100 === 0) continue; // Salz, Gewürze, Wasser
     const g = gramsOf(r.amount, r.name);
-    if (!food || g === null) {
-      missing.push(r.name);
-      continue;
-    }
-    kcal += (g * food.kcal) / 100;
+    if (per100 === null) unknown.push(shortName(r.name));
+    else if (g === null) noWeight.push(shortName(r.name));
+    else kcal += (g * per100) / 100;
   }
-  return { kcal, missing };
+  return { kcal, unknown, noWeight };
 }

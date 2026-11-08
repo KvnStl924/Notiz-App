@@ -343,3 +343,5 @@ jedem Push auf GitHub Pages. Prüfen: Lauf unter Actions grün, und die Programm
 - **Hochformat**: Manifest `portrait` plus `screen.orientation.lock` in `src/main.tsx` (iPhone kann nicht gesperrt werden).
 - **iPhone-Anzeigefehler**: Liste hinter einer offenen Notiz wird ausgeblendet (`setRootHidden` in `src/app.tsx`), sonst
   zeigte das Glas nach App-Wechsel die alte Liste.
+- **Eigene Kalorien**: „Rama Cremefine 7 % (90 kcal)“ in der Zutat-Spalte = kcal je 100 g, geht vor der Tabelle. Die Anzeige
+  trennt „Unbekannt“ (Lebensmittel fehlt in der Tabelle) und „Ohne Gewicht“.

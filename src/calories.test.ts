@@ -28,6 +28,15 @@ describe('Kalorien', () => {
       { name: 'Drachenfrucht', amount: '1' },
     ]);
     expect(Math.round(r.kcal)).toBe(1775 + 372);
-    expect(r.missing).toEqual(['Drachenfrucht']);
+    expect(r.unknown).toEqual(['Drachenfrucht']);
+  });
+  it('eigene Kalorien in Klammern hinter der Zutat', () => {
+    const r = estimateCalories([
+      { name: 'Rama Cremefine 7 % (90 kcal)', amount: '250 g (1x)' },
+      { name: 'Tzatziki (optional)', amount: '' },
+    ]);
+    expect(r.kcal).toBe(225);
+    expect(r.unknown).toEqual([]);
+    expect(r.noWeight).toEqual(['Tzatziki']);
   });
 });
