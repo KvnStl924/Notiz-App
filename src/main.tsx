@@ -57,7 +57,25 @@ function repaintOnReturn() {
   });
 }
 
+/**
+ * Hochformat festhalten. Das Manifest sagt es schon, Android übernimmt Änderungen daran aber erst
+ * nach Tagen oder einer Neuinstallation. Die Sperre per Code wirkt sofort in der installierten App.
+ */
+function lockPortrait() {
+  const lock = () => {
+    try {
+      const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+      o.lock?.('portrait').catch(() => {});
+    } catch {
+      /* nicht unterstützt (z. B. iPhone oder normaler Browser-Tab) */
+    }
+  };
+  lock();
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && lock());
+}
+
 render(<App />, document.getElementById('app')!);
+lockPortrait();
 void sync.init();
 inbox.start();
 keepScreenOn();
