@@ -18,7 +18,7 @@ import { parenGrams, parseAmount, toGrams, unitOf } from './units';
  */
 const FOODS: [string, number, number?, number?][] = [
   // Fertiges und Zusammengesetztes zuerst
-  ['saure sahne', 115],
+  ['saure sahne', 118],
   ['brühe', 5],
   ['fond', 10],
   ['schokolade', 540],
@@ -248,6 +248,30 @@ const FOODS: [string, number, number?, number?][] = [
   ['gewürz', 0],
   ['kräuter', 0],
 ];
+
+/** Nährwerte je 100 g (Gramm, Energie in kcal und kJ). */
+export interface Nutrition {
+  kj: number;
+  kcal: number;
+  fat: number;
+  /** davon gesättigte Fettsäuren */
+  saturated: number;
+  carbs: number;
+  /** davon Zucker */
+  sugar: number;
+  protein: number;
+  salt: number;
+  fiber?: number;
+}
+
+/**
+ * Nährwerte von Etiketten, die Kevin fotografiert hat (genauer als die Richtwerte oben).
+ * Schlüssel = Suchwort aus FOODS; dessen kcal muss mit dem Etikett übereinstimmen.
+ */
+export const LABELS: Record<string, Nutrition> = {
+  // REWE, Saure Sahne 10 %
+  'saure sahne': { kj: 491, kcal: 118, fat: 10, saturated: 6.9, carbs: 3.5, sugar: 3.5, protein: 3, salt: 0.1 },
+};
 
 /** Text in Klammern gehört nicht zum Namen („Butter (Keksboden)“ ist Butter). */
 const cleanName = (name: string) =>

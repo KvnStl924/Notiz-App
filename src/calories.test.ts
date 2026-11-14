@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateCalories, foodOf, gramsOf } from './calories';
+import { LABELS, estimateCalories, foodOf, gramsOf } from './calories';
 import { parenGrams, shopAmount } from './units';
 
 describe('Kalorien', () => {
@@ -38,5 +38,8 @@ describe('Kalorien', () => {
     expect(r.kcal).toBe(225);
     expect(r.unknown).toEqual([]);
     expect(r.noWeight).toEqual(['Tzatziki']);
+  });
+  it('Etiketten-Werte passen zur Tabelle', () => {
+    for (const [key, n] of Object.entries(LABELS)) expect(foodOf(key)?.kcal, key).toBe(n.kcal);
   });
 });
