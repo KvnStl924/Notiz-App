@@ -171,7 +171,7 @@ const FOODS: [string, number, number?, number?][] = [
   ['lauchzwiebel', 30, 15],
   ['zwiebel', 40, 100],
   ['knoblauch', 140, 5],
-  ['tomatenmark', 80],
+  ['tomatenmark', 95],
   ['passierte', 30],
   ['passata', 30],
   ['tomate', 20, 100, 400],
@@ -279,6 +279,8 @@ export const LABELS: Record<string, Nutrition> = {
   // Tomaten gehackt (Dose); gilt auch für frische Tomaten (kaum Unterschied)
   tomate: { kj: 86, kcal: 20, fat: 0.5, saturated: 0.1, carbs: 3, sugar: 3, fiber: 1.1, protein: 1.3, salt: 0.05 },
   // ja! Mais (Dose), Werte je 100 g abgetropft
+  // ja! Tomatenmark (zweifach konzentriert), Werte je 100 g
+  tomatenmark: { kj: 402, kcal: 95, fat: 1, saturated: 0.2, carbs: 15, sugar: 15, fiber: 3.1, protein: 4.8, salt: 0.6 },
   mais: { kj: 349, kcal: 83, fat: 1.8, saturated: 0.4, carbs: 12, sugar: 6.3, fiber: 3.9, protein: 2.6, salt: 0.4 },
 };
 
