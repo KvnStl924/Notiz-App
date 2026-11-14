@@ -21,6 +21,8 @@ const FOODS: [string, number, number?, number?][] = [
   ['saure sahne', 118],
   ['hühner brühe', 5],
   ['hühnerbrühe', 5],
+  ['rinder brühe', 4],
+  ['rinderbrühe', 4],
   ['brühe', 2],
   ['fond', 10],
   ['schokolade', 540],
@@ -279,6 +281,9 @@ export const LABELS: Record<string, Nutrition> = {
   // Hühner Brühe (Glas), Werte je 100 ml zubereitet
   hühnerbrühe: { kj: 21, kcal: 5, fat: 0.1, saturated: 0.1, carbs: 0.8, sugar: 0.3, fiber: 0.5, protein: 0.2, salt: 1.1 },
   'hühner brühe': { kj: 21, kcal: 5, fat: 0.1, saturated: 0.1, carbs: 0.8, sugar: 0.3, fiber: 0.5, protein: 0.2, salt: 1.1 },
+  // Rinderbrühe (Glas), Werte je 100 ml zubereitet
+  rinderbrühe: { kj: 18, kcal: 4, fat: 0.1, saturated: 0.1, carbs: 0.6, sugar: 0.1, fiber: 0.5, protein: 0.2, salt: 0.82 },
+  'rinder brühe': { kj: 18, kcal: 4, fat: 0.1, saturated: 0.1, carbs: 0.6, sugar: 0.1, fiber: 0.5, protein: 0.2, salt: 0.82 },
   // Kidneybohnen (Dose), Werte je 100 g abgetropft
   kidney: { kj: 415, kcal: 99, fat: 0.6, saturated: 0, carbs: 13, sugar: 0, fiber: 5.8, protein: 7.4, salt: 0.42 },
   // Tomaten gehackt (Dose); gilt auch für frische Tomaten (kaum Unterschied)
