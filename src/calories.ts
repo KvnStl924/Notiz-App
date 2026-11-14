@@ -188,7 +188,7 @@ const FOODS: [string, number, number?, number?][] = [
   ['gurke', 15, 400],
   ['champignon', 22, 20],
   ['pilze', 22],
-  ['mais', 90, 0, 140],
+  ['mais', 83, 0, 140],
   ['kichererbsen', 120, 0, 240],
   ['erbsen', 80, 0, 280],
   ['kidney', 99, 0, 250],
@@ -278,6 +278,8 @@ export const LABELS: Record<string, Nutrition> = {
   kidney: { kj: 415, kcal: 99, fat: 0.6, saturated: 0, carbs: 13, sugar: 0, fiber: 5.8, protein: 7.4, salt: 0.42 },
   // Tomaten gehackt (Dose); gilt auch für frische Tomaten (kaum Unterschied)
   tomate: { kj: 86, kcal: 20, fat: 0.5, saturated: 0.1, carbs: 3, sugar: 3, fiber: 1.1, protein: 1.3, salt: 0.05 },
+  // ja! Mais (Dose), Werte je 100 g abgetropft
+  mais: { kj: 349, kcal: 83, fat: 1.8, saturated: 0.4, carbs: 12, sugar: 6.3, fiber: 3.9, protein: 2.6, salt: 0.4 },
 };
 
 /** Text in Klammern gehört nicht zum Namen („Butter (Keksboden)“ ist Butter). */
