@@ -19,7 +19,7 @@ import { parenGrams, parseAmount, toGrams, unitOf } from './units';
 const FOODS: [string, number, number?, number?][] = [
   // Fertiges und Zusammengesetztes zuerst
   ['saure sahne', 118],
-  ['brühe', 5],
+  ['brühe', 2],
   ['fond', 10],
   ['schokolade', 540],
   ['kuvertüre', 540],
@@ -191,7 +191,7 @@ const FOODS: [string, number, number?, number?][] = [
   ['mais', 90, 0, 140],
   ['kichererbsen', 120, 0, 240],
   ['erbsen', 80, 0, 280],
-  ['kidney', 110, 0, 250],
+  ['kidney', 99, 0, 250],
   ['bohnen', 100, 0, 250],
   ['linsen', 300, 0, 260],
   ['lauch', 30, 200],
@@ -271,6 +271,13 @@ export interface Nutrition {
 export const LABELS: Record<string, Nutrition> = {
   // REWE, Saure Sahne 10 %
   'saure sahne': { kj: 491, kcal: 118, fat: 10, saturated: 6.9, carbs: 3.5, sugar: 3.5, protein: 3, salt: 0.1 },
+  // „<0,5 g“ auf Etiketten ist als 0,5 g eingetragen (Obergrenze)
+  // Gemüsebrühe (Glas, Pulver), Werte je 100 ml zubereitet
+  brühe: { kj: 9, kcal: 2, fat: 0, saturated: 0, carbs: 0.5, sugar: 0.5, fiber: 0.5, protein: 0, salt: 1 },
+  // Kidneybohnen (Dose), Werte je 100 g abgetropft
+  kidney: { kj: 415, kcal: 99, fat: 0.6, saturated: 0, carbs: 13, sugar: 0, fiber: 5.8, protein: 7.4, salt: 0.42 },
+  // Tomaten gehackt (Dose); gilt auch für frische Tomaten (kaum Unterschied)
+  tomate: { kj: 86, kcal: 20, fat: 0.5, saturated: 0.1, carbs: 3, sugar: 3, fiber: 1.1, protein: 1.3, salt: 0.05 },
 };
 
 /** Text in Klammern gehört nicht zum Namen („Butter (Keksboden)“ ist Butter). */
