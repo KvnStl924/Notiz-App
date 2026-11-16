@@ -41,14 +41,29 @@ import { ingredientsOf } from './shopping';
 function CalorieRow(props: { note: Note; factor: number }) {
   const rows = ingredientsOf(props.note).map((g) => ({ name: g.name, amount: scaleAmount(g.amount, props.factor) }));
   if (rows.length === 0) return null;
-  const { kcal, unknown, noWeight } = estimateCalories(rows);
+  const { kcal, fat, carbs, protein, kcalOnly, unknown, noWeight } = estimateCalories(rows);
   const rounded = Math.round(kcal / 10) * 10;
+  const grams = (g: number) => `ca. ${Math.round(g).toLocaleString('de-DE')} g`;
   return (
     <div class="kcal">
       <div class="meta-row" style={{ margin: '0 4px' }}>
         <span>Kalorien (ganzes Gericht)</span>
         <span class="kcal-value">ca. {rounded.toLocaleString('de-DE')} kcal</span>
       </div>
+      <div class="kcal-macros">
+        <span>
+          Fett <b>{grams(fat)}</b>
+        </span>
+        <span>
+          Kohlenhydrate <b>{grams(carbs)}</b>
+        </span>
+        <span>
+          Eiweiß <b>{grams(protein)}</b>
+        </span>
+      </div>
+      {kcalOnly.length > 0 && (
+        <p class="kcal-missing">Nur bei den Kalorien mitgezählt: {kcalOnly.join(', ')}.</p>
+      )}
       {unknown.length > 0 && (
         <p class="kcal-missing">
           Unbekannt: {unknown.join(', ')}. Kalorien je 100 g (steht auf der Packung) in Klammern hinter die Zutat

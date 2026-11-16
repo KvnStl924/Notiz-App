@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LABELS, estimateCalories, foodOf, gramsOf } from './calories';
+import { FOOD_KEYS, LABELS, estimateCalories, foodOf, gramsOf, macrosOf } from './calories';
 import { parenGrams, shopAmount } from './units';
 
 describe('Kalorien', () => {
@@ -38,6 +38,15 @@ describe('Kalorien', () => {
     expect(r.kcal).toBe(225);
     expect(r.unknown).toEqual([]);
     expect(r.noWeight).toEqual(['Tzatziki']);
+  });
+  it('Fett, Kohlenhydrate, Eiweiß für jedes Lebensmittel mit Kalorien', () => {
+    for (const { key, kcal } of FOOD_KEYS()) if (kcal > 0) expect(macrosOf(key), key).not.toBeNull();
+    const r = estimateCalories([
+      { name: 'Spaghetti', amount: '500 g' },
+      { name: 'Cremefine (90 kcal)', amount: '200 g' },
+    ]);
+    expect(r.carbs).toBeCloseTo(355, 6);
+    expect(r.kcalOnly).toEqual(['Cremefine']);
   });
   it('Etiketten-Werte passen zur Tabelle', () => {
     for (const [key, n] of Object.entries(LABELS)) expect(foodOf(key)?.kcal, key).toBe(n.kcal);

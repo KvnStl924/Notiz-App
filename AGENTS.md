@@ -345,3 +345,5 @@ jedem Push auf GitHub Pages. Prüfen: Lauf unter Actions grün, und die Programm
   zeigte das Glas nach App-Wechsel die alte Liste.
 - **Eigene Kalorien**: „Rama Cremefine 7 % (90 kcal)“ in der Zutat-Spalte = kcal je 100 g, geht vor der Tabelle. Die Anzeige
   trennt „Unbekannt“ (Lebensmittel fehlt in der Tabelle) und „Ohne Gewicht“.
+- **Nährwerte im Rezept**: unter den Kalorien Fett, Kohlenhydrate, Eiweiß fürs ganze Gericht. Werte: `LABELS` (von Kevins
+  Etiketten, alle Angaben je 100 g) vor `MACROS` (Richtwerte). Ein Test prüft, dass jedes Lebensmittel mit kcal Werte hat.

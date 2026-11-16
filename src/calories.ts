@@ -294,6 +294,213 @@ export const LABELS: Record<string, Nutrition> = {
   mais: { kj: 349, kcal: 83, fat: 1.8, saturated: 0.4, carbs: 12, sugar: 6.3, fiber: 3.9, protein: 2.6, salt: 0.4 },
 };
 
+/**
+ * Fett, Kohlenhydrate, Eiweiß je 100 g (Richtwerte) für alle Lebensmittel aus FOODS ohne Etikett.
+ * Schlüssel = Suchwort aus FOODS. Gewürze und Wasser (0 kcal) brauchen keinen Eintrag.
+ */
+const MACROS: Record<string, [fat: number, carbs: number, protein: number]> = {
+  fond: [0.3, 0.5, 1.5],
+  schokolade: [31, 57, 6],
+  kuvertüre: [32, 50, 7],
+  'grüne bohnen': [0.2, 5, 2],
+  'crème fraîche': [30, 3, 2.5],
+  'creme fraiche': [30, 3, 2.5],
+  fraîche: [30, 3, 2.5],
+  fraiche: [30, 3, 2.5],
+  erdnussbutter: [50, 15, 25],
+  erdnussmus: [50, 15, 25],
+  buttermilch: [0.5, 4, 3.4],
+  butterschmalz: [99.8, 0, 0],
+  butterkeks: [12, 74, 7.5],
+  kokosmilch: [18, 3, 2],
+  kondensmilch: [7.5, 10, 7],
+  kochsahne: [15, 4, 3],
+  cremefine: [9, 6, 3],
+  kochcreme: [9, 6, 3],
+  tzatziki: [10, 4, 4],
+  zaziki: [10, 4, 4],
+  pesto: [45, 6, 5],
+  hummus: [20, 14, 8],
+  schlagsahne: [32, 3, 2.4],
+  schmand: [24, 3.5, 2.6],
+  frischkäse: [22, 4, 6],
+  hüttenkäse: [4, 3, 12],
+  mascarpone: [44, 4, 4],
+  mozzarella: [19, 1, 18],
+  burrata: [22, 1, 15],
+  parmesan: [29, 0, 32],
+  pecorino: [28, 0, 30],
+  feta: [21, 1, 16],
+  halloumi: [25, 2, 21],
+  ricotta: [11, 3, 9],
+  magerquark: [0.3, 4, 12],
+  quark: [5, 3.5, 12],
+  skyr: [0.2, 4, 11],
+  joghurt: [3.5, 4.5, 4],
+  gouda: [29, 0, 25],
+  emmentaler: [29, 0, 28],
+  cheddar: [33, 1, 25],
+  käse: [28, 1, 25],
+  eigelb: [27, 1, 16],
+  eiweiß: [0, 1, 11],
+  '=eier': [10, 1, 13],
+  '=ei': [10, 1, 13],
+  butter: [82, 0.6, 0.7],
+  margarine: [80, 0.5, 0.2],
+  schmalz: [100, 0, 0],
+  milch: [3.5, 4.8, 3.4],
+  sahne: [31, 3, 2.5],
+  mayonnaise: [75, 2, 1],
+  mayo: [75, 2, 1],
+  nutella: [31, 57, 6],
+  nougat: [31, 57, 6],
+  lotus: [37, 57, 3],
+  öl: [100, 0, 0],
+  oliven: [14, 2, 1],
+  paniermehl: [3, 72, 10],
+  semmelbrösel: [3, 72, 10],
+  mehl: [1, 72, 10],
+  stärke: [0, 86, 0.5],
+  grieß: [1, 70, 11],
+  haferflocken: [7, 59, 13],
+  reisnudeln: [1, 80, 6],
+  preiselbeer: [0.5, 45, 0.5],
+  reis: [0.6, 77, 7],
+  nudeln: [1.5, 71, 12],
+  spaghetti: [1.5, 71, 12],
+  penne: [1.5, 71, 12],
+  fusilli: [1.5, 71, 12],
+  tagliatelle: [1.5, 71, 12],
+  makkaroni: [1.5, 71, 12],
+  lasagne: [1.5, 71, 12],
+  pasta: [1.5, 71, 12],
+  gnocchi: [0.5, 32, 4],
+  couscous: [2, 70, 12],
+  bulgur: [1.5, 70, 12],
+  quinoa: [6, 64, 14],
+  blätterteig: [25, 33, 5],
+  pizzateig: [4, 48, 8],
+  teig: [12, 45, 7],
+  toast: [4, 48, 8],
+  brötchen: [2, 55, 9],
+  brot: [2, 45, 8],
+  tortilla: [7, 50, 8],
+  wrap: [7, 50, 8],
+  hefe: [1, 8, 12],
+  backpulver: [0, 25, 0],
+  puderzucker: [0, 100, 0],
+  vanillezucker: [0, 100, 0],
+  zucker: [0, 100, 0],
+  honig: [0, 80, 0.4],
+  sirup: [0, 65, 0],
+  marmelade: [0, 60, 0.4],
+  konfitüre: [0, 60, 0.4],
+  kakao: [21, 11, 20],
+  keks: [20, 68, 6],
+  mandel: [53, 6, 24],
+  haselnuss: [61, 11, 15],
+  walnuss: [65, 11, 15],
+  erdnuss: [49, 12, 26],
+  cashew: [44, 30, 18],
+  pinienkern: [68, 13, 14],
+  sesam: [50, 10, 18],
+  kokosraspel: [64, 7, 6],
+  nüsse: [55, 10, 18],
+  rosinen: [0.5, 69, 2.5],
+  hackfleisch: [20, 0, 18],
+  rinderhack: [15, 0, 20],
+  '=hack': [20, 0, 18],
+  hähnchen: [3, 0, 23],
+  hühnchen: [3, 0, 23],
+  huhn: [7, 0, 20],
+  pute: [1.5, 0, 23],
+  rind: [10, 0, 21],
+  steak: [10, 0, 21],
+  schwein: [13, 0, 20],
+  speck: [45, 0, 15],
+  bacon: [45, 0, 15],
+  guanciale: [65, 0, 10],
+  pancetta: [42, 0, 16],
+  schinken: [10, 1, 20],
+  salami: [34, 1, 23],
+  chorizo: [38, 2, 24],
+  würstchen: [24, 1, 13],
+  wurst: [24, 1, 13],
+  lachs: [13, 0, 20],
+  thunfisch: [1, 0, 26],
+  garnelen: [1, 0, 19],
+  kabeljau: [0.7, 0, 18],
+  fisch: [3, 0, 18],
+  tofu: [7, 2, 13],
+  pulver: [10, 40, 12],
+  süßkartoffel: [0.1, 20, 1.6],
+  kartoffel: [0.1, 15, 2],
+  frühlingszwiebel: [0.3, 5, 1.8],
+  lauchzwiebel: [0.3, 5, 1.8],
+  zwiebel: [0.1, 8, 1.2],
+  knoblauch: [0.5, 28, 6],
+  passierte: [0.2, 5, 1.5],
+  passata: [0.2, 5, 1.5],
+  paprika: [0.3, 5, 1],
+  karotte: [0.2, 8, 0.9],
+  möhre: [0.2, 8, 0.9],
+  zucchini: [0.3, 2, 1.5],
+  aubergine: [0.2, 3, 1.2],
+  brokkoli: [0.4, 3, 3.5],
+  blumenkohl: [0.3, 2.5, 2],
+  spinat: [0.4, 1, 2.9],
+  eisberg: [0.2, 2, 1],
+  salat: [0.2, 2, 1],
+  gurke: [0.1, 2, 0.6],
+  champignon: [0.3, 0.5, 3],
+  pilze: [0.3, 0.5, 3],
+  kichererbsen: [2.5, 15, 7],
+  erbsen: [0.5, 11, 6],
+  bohnen: [0.5, 14, 7],
+  linsen: [1.5, 48, 24],
+  lauch: [0.3, 3, 2],
+  porree: [0.3, 3, 2],
+  sellerie: [0.2, 2, 1],
+  kürbis: [0.1, 5, 1],
+  avocado: [15, 1, 2],
+  ingwer: [0.8, 15, 1.8],
+  chili: [0.4, 7, 2],
+  rotkohl: [0.2, 4, 1.5],
+  kohl: [0.2, 4, 1.5],
+  sauerkraut: [0.3, 1, 1.5],
+  apfel: [0.2, 11, 0.3],
+  banane: [0.2, 20, 1.1],
+  zitrone: [0.3, 3, 0.7],
+  limette: [0.3, 3, 0.7],
+  orange: [0.2, 9, 1],
+  erdbeer: [0.4, 5.5, 0.7],
+  himbeer: [0.3, 5, 1.3],
+  heidelbeer: [0.6, 7, 0.6],
+  blaubeer: [0.6, 7, 0.6],
+  beeren: [0.4, 6, 1],
+  ananas: [0.1, 12, 0.5],
+  mango: [0.4, 13, 0.8],
+  essig: [0, 0.5, 0],
+  wein: [0, 2.5, 0.1],
+  bier: [0, 3, 0.5],
+  sojasauce: [0, 5, 8],
+  sojasoße: [0, 5, 8],
+  ketchup: [0.2, 24, 1.2],
+  senf: [4, 5, 6],
+  saft: [0.1, 10, 0.4],
+};
+
+/** Fett, Kohlenhydrate, Eiweiß je 100 g zu einem Suchwort (Etikett vor Richtwert). */
+export function macrosOf(key: string): { fat: number; carbs: number; protein: number } | null {
+  const l = LABELS[key];
+  if (l) return { fat: l.fat, carbs: l.carbs, protein: l.protein };
+  const m = MACROS[key];
+  return m ? { fat: m[0], carbs: m[1], protein: m[2] } : null;
+}
+
+/** Alle Suchwörter, für die Tests. */
+export const FOOD_KEYS = (): { key: string; kcal: number }[] => FOODS.map(([key, kcal]) => ({ key, kcal }));
+
 /** Text in Klammern gehört nicht zum Namen („Butter (Keksboden)“ ist Butter). */
 const cleanName = (name: string) =>
   name
@@ -310,7 +517,8 @@ function wordMatches(w: string, key: string): boolean {
 
 export function foodOf(name: string) {
   const n = cleanName(name);
-  const found = (hit: (typeof FOODS)[number] | undefined) => (hit ? { kcal: hit[1], piece: hit[2] || 0, can: hit[3] || 0 } : null);
+  const found = (hit: (typeof FOODS)[number] | undefined) =>
+    hit ? { key: hit[0], kcal: hit[1], piece: hit[2] || 0, can: hit[3] || 0 } : null;
   const phrase = FOODS.find(([key]) => key.includes(' ') && n.includes(key));
   if (phrase) return found(phrase);
   // Hauptwort steht meist hinten („Gehackte Tomaten“, „Rote Linsen“): von hinten suchen
@@ -351,6 +559,12 @@ export function ownKcal(name: string): number | null {
 
 export interface CalorieEstimate {
   kcal: number;
+  /** Gramm fürs ganze Gericht (nur Zutaten mit bekannten Werten) */
+  fat: number;
+  carbs: number;
+  protein: number;
+  /** mit eigenen kcal in Klammern: zählen bei den Kalorien, aber nicht bei Fett, Kohlenhydraten, Eiweiß */
+  kcalOnly: string[];
   /** Zutaten, die nicht in der Tabelle stehen (Gewicht wäre bekannt oder egal) */
   unknown: string[];
   /** Zutaten, deren Gewicht sich nicht bestimmen lässt */
@@ -362,15 +576,30 @@ const shortName = (name: string) => name.replace(/\([^)]*\)/g, ' ').replace(/\s+
 
 export function estimateCalories(rows: { name: string; amount: string }[]): CalorieEstimate {
   let kcal = 0;
+  let fat = 0;
+  let carbs = 0;
+  let protein = 0;
   const unknown: string[] = [];
   const noWeight: string[] = [];
+  const kcalOnly: string[] = [];
   for (const r of rows) {
-    const per100 = ownKcal(r.name) ?? foodOf(r.name)?.kcal ?? null;
+    const own = ownKcal(r.name);
+    const food = foodOf(r.name);
+    const per100 = own ?? food?.kcal ?? null;
     if (per100 === 0) continue; // Salz, Gewürze, Wasser
     const g = gramsOf(r.amount, r.name);
     if (per100 === null) unknown.push(shortName(r.name));
     else if (g === null) noWeight.push(shortName(r.name));
-    else kcal += (g * per100) / 100;
+    else {
+      kcal += (g * per100) / 100;
+      // eigene kcal gehören zu einem anderen Produkt: dessen Fett usw. kennen wir nicht
+      const m = own === null && food ? macrosOf(food.key) : null;
+      if (m) {
+        fat += (g * m.fat) / 100;
+        carbs += (g * m.carbs) / 100;
+        protein += (g * m.protein) / 100;
+      } else kcalOnly.push(shortName(r.name));
+    }
   }
-  return { kcal, unknown, noWeight };
+  return { kcal, fat, carbs, protein, kcalOnly, unknown, noWeight };
 }

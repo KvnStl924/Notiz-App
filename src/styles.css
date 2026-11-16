@@ -496,6 +496,20 @@ svg {
   color: var(--label);
   font-variant-numeric: tabular-nums;
 }
+.kcal-macros {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 8px 4px 0;
+  font-size: 14px;
+  color: var(--label-2);
+}
+.kcal-macros b {
+  font-weight: 500;
+  color: var(--label);
+  font-variant-numeric: tabular-nums;
+}
 .kcal-missing {
   margin: 6px 4px 0;
   font-size: 13px;
